@@ -1,0 +1,28 @@
+{
+	"flutter": {
+		"platforms": {
+			"android": {
+				"default": {
+					"projectId": "neighbor-hub-33460",
+					"appId": "1:1057077701872:android:e23eaafa4b651530352635",
+					"fileOutput": "android/app/google-services.json"
+				}
+			},
+			"dart": {
+				"lib/firebase_options.dart": {
+					"projectId": "neighbor-hub-33460",
+					"configurations": {
+						"android": "1:1057077701872:android:e23eaafa4b651530352635",
+						"ios": "1:1057077701872:ios:26337688c1af63ca352635",
+						"macos": "1:1057077701872:ios:26337688c1af63ca352635",
+						"web": "1:1057077701872:web:715bdfe2a85da6cc352635",
+						"windows": "1:1057077701872:web:6e5326ee49174ec0352635"
+					}
+				}
+			}
+		}
+	},
+	"firestore": {
+		"rules": "firestore.rules"
+	}
+}

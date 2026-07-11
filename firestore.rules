@@ -1,0 +1,239 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid));
+    }
+
+    function privateAccountDoc(uid) {
+      return get(/databases/$(database)/documents/users/$(uid)/private/account);
+    }
+
+    function currentBuildingId() {
+      return userDoc(request.auth.uid).data.buildingId;
+    }
+
+    function isOwnDoc(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdminOf(buildingId) {
+      return signedIn()
+        && currentBuildingId() == buildingId
+        && privateAccountDoc(request.auth.uid).data.role == "admin";
+    }
+
+    function isBuildingMember(buildingId) {
+      return signedIn() && currentBuildingId() == buildingId;
+    }
+
+    function isResidentDirectoryViewer(docBuildingId) {
+      return signedIn() && currentBuildingId() == docBuildingId;
+    }
+
+    function isAllowedPostCategory(category) {
+      return category in ["discussion", "recommendation", "help", "service", null];
+    }
+
+    function isAllowedNotificationCategory(category) {
+      return category in ["announcement", "chat", "reaction", "comment", "poll"];
+    }
+
+    function isPublicUserCreate() {
+      return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.buildingId == null
+        && request.resource.data.apartmentId == null;
+    }
+
+    function isSelfPublicUserUpdate() {
+      return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.buildingId == resource.data.buildingId
+        && request.resource.data.apartmentId == resource.data.apartmentId;
+    }
+
+    function isAdminPublicUserUpdate() {
+      return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.buildingId != null
+        && request.resource.data.apartmentId != null
+        && isAdminOf(request.resource.data.buildingId);
+    }
+
+    function isSelfPrivateCreate() {
+      return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
+        && request.resource.data.role == "resident"
+        && request.resource.data.accountStatus == "active";
+    }
+
+    function isSelfPrivateUpdate() {
+      return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
+        && request.resource.data.role == resource.data.role
+        && request.resource.data.accountStatus in [resource.data.accountStatus, "deletion_requested"];
+    }
+
+    function isAdminPrivateUpdate(targetUid) {
+      return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
+        && isAdminOf(userDoc(targetUid).data.buildingId)
+        && request.auth.uid != targetUid;
+    }
+
+    function isPostAuthor(postId) {
+      return signedIn() && (
+        resource.data.authorUid == request.auth.uid ||
+        get(/databases/$(database)/documents/post_authorship/$(postId)).data.authorUid == request.auth.uid
+      );
+    }
+
+    function isPostAuthorForCreate() {
+      return request.resource.data.isAnonymous == true
+        ? request.resource.data.authorUid == null
+        : request.resource.data.authorUid == request.auth.uid;
+    }
+
+    match /buildings/{buildingId} {
+      allow read: if isBuildingMember(buildingId);
+      allow create, update, delete: if isAdminOf(buildingId);
+    }
+
+    match /users/{uid} {
+      allow read: if isOwnDoc(uid) || isResidentDirectoryViewer(resource.data.buildingId) || isAdminOf(resource.data.buildingId);
+      allow create: if isOwnDoc(uid) && isPublicUserCreate();
+      allow update: if (isOwnDoc(uid) && isSelfPublicUserUpdate()) || (isAdminOf(resource.data.buildingId) && isAdminPublicUserUpdate());
+      allow delete: if false;
+
+      match /private/account {
+        allow read: if isOwnDoc(uid) || isAdminOf(userDoc(uid).data.buildingId);
+        allow create: if isOwnDoc(uid) && isSelfPrivateCreate();
+        allow update: if (isOwnDoc(uid) && isSelfPrivateUpdate()) || isAdminPrivateUpdate(uid);
+        allow delete: if false;
+      }
+    }
+
+    match /apartments/{apartmentId} {
+      function isOccupiedWriteValid() {
+        return request.resource.data.status != "occupied" || request.resource.data.primaryResidentUid != null;
+      }
+
+      allow read: if isBuildingMember(resource.data.buildingId);
+      allow create: if isAdminOf(request.resource.data.buildingId) && isOccupiedWriteValid();
+      allow update: if isAdminOf(request.resource.data.buildingId) && isOccupiedWriteValid();
+      allow delete: if isAdminOf(resource.data.buildingId);
+    }
+
+    match /apartment_requests/{uid} {
+      allow read: if isOwnDoc(uid) || isAdminOf(resource.data.buildingId);
+      allow create: if isOwnDoc(uid)
+        && request.resource.data.keys().hasOnly(["buildingId", "apartmentId", "familyNote", "status", "decidedBy", "createdAt", "decidedAt"])
+        && request.resource.data.buildingId == currentBuildingId()
+        && userDoc(request.auth.uid).data.apartmentId == null
+        && (!exists(/databases/$(database)/documents/apartment_requests/$(uid)) || get(/databases/$(database)/documents/apartment_requests/$(uid)).data.status != "pending")
+        && request.resource.data.status == "pending"
+        && request.resource.data.decidedBy == null
+        && request.resource.data.decidedAt == null;
+      allow update: if isAdminOf(resource.data.buildingId);
+      allow delete: if false;
+    }
+
+    match /posts/{postId} {
+      allow read: if isBuildingMember(resource.data.buildingId);
+      allow create: if isBuildingMember(request.resource.data.buildingId)
+        && request.resource.data.keys().hasOnly(["buildingId", "authorUid", "isAnonymous", "category", "text", "isPinned", "isLocked", "reactionCount", "commentCount", "bookmarkCount", "createdAt", "updatedAt"])
+        && isAllowedPostCategory(request.resource.data.category)
+        && isPostAuthorForCreate()
+        && request.resource.data.isPinned == false
+        && request.resource.data.isLocked == false
+        && request.resource.data.reactionCount == 0
+        && request.resource.data.commentCount == 0
+        && request.resource.data.bookmarkCount == 0;
+      allow update: if (isPostAuthor(postId) && request.resource.data.text is string && request.resource.data.category is string && request.resource.data.isPinned == resource.data.isPinned && request.resource.data.isLocked == resource.data.isLocked)
+        || (isAdminOf(resource.data.buildingId) && request.resource.data.text == resource.data.text && request.resource.data.category == resource.data.category);
+      allow delete: if isPostAuthor(postId) || isAdminOf(resource.data.buildingId);
+    }
+
+    match /post_authorship/{postId} {
+      allow read: if isAdminOf(resource.data.buildingId) || resource.data.authorUid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.authorUid == request.auth.uid && isBuildingMember(request.resource.data.buildingId);
+      allow update, delete: if false;
+    }
+
+    match /posts/{postId}/reactions/{uid} {
+      allow read: if isBuildingMember(get(/databases/$(database)/documents/posts/$(postId)).data.buildingId);
+      allow create, delete: if isOwnDoc(uid);
+      allow update: if false;
+    }
+
+    match /posts/{postId}/comments/{commentId} {
+      allow read: if isBuildingMember(get(/databases/$(database)/documents/posts/$(postId)).data.buildingId);
+      allow create: if signedIn()
+        && request.resource.data.authorUid == request.auth.uid
+        && isBuildingMember(get(/databases/$(database)/documents/posts/$(postId)).data.buildingId)
+        && get(/databases/$(database)/documents/posts/$(postId)).data.isLocked == false;
+      allow update, delete: if signedIn()
+        && (
+          resource.data.authorUid == request.auth.uid
+          || get(/databases/$(database)/documents/posts/$(postId)).data.authorUid == request.auth.uid
+          || isAdminOf(get(/databases/$(database)/documents/posts/$(postId)).data.buildingId)
+        );
+    }
+
+    match /bookmarks/{bookmarkId} {
+      allow read: if signedIn() && resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && bookmarkId == request.auth.uid + "_" + request.resource.data.postId && request.resource.data.uid == request.auth.uid;
+      allow delete: if signedIn() && bookmarkId == request.auth.uid + "_" + resource.data.postId && resource.data.uid == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if isBuildingMember(resource.data.buildingId);
+      allow create, update: if isAdminOf(request.resource.data.buildingId);
+      allow delete: if isAdminOf(resource.data.buildingId);
+    }
+
+    match /polls/{pollId} {
+      allow read: if isBuildingMember(resource.data.buildingId);
+      allow create, update: if isAdminOf(request.resource.data.buildingId);
+      allow delete: if isAdminOf(resource.data.buildingId);
+
+      match /votes/{uid} {
+        allow read: if isBuildingMember(get(/databases/$(database)/documents/polls/$(pollId)).data.buildingId);
+        allow create: if isOwnDoc(uid)
+          && get(/databases/$(database)/documents/polls/$(pollId)).data.status == "active"
+          && !exists(/databases/$(database)/documents/polls/$(pollId)/votes/$(uid));
+        allow update, delete: if false;
+      }
+    }
+
+    match /notifications/{notificationId} {
+      allow read, update, delete: if signedIn() && resource.data.recipientUid == request.auth.uid;
+      allow create: if signedIn()
+        && isAllowedNotificationCategory(request.resource.data.category)
+        && userDoc(request.resource.data.recipientUid).data.buildingId == currentBuildingId()
+        && (
+          request.resource.data.category != "announcement"
+          || isAdminOf(currentBuildingId())
+        );
+    }
+
+    match /conversations/{conversationId} {
+      allow read, update: if signedIn() && request.auth.uid in resource.data.participantUids;
+      allow create: if signedIn()
+        && request.auth.uid in request.resource.data.participantUids
+        && request.resource.data.participantUids.size() == 2
+        && userDoc(request.resource.data.participantUids[0]).data.buildingId == currentBuildingId()
+        && userDoc(request.resource.data.participantUids[1]).data.buildingId == currentBuildingId();
+
+      match /messages/{messageId} {
+        allow read, create: if signedIn() && request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantUids;
+        allow update, delete: if false;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

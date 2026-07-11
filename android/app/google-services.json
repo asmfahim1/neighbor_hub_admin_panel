@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "1057077701872",
+    "project_id": "neighbor-hub-33460",
+    "storage_bucket": "neighbor-hub-33460.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1057077701872:android:e23eaafa4b651530352635",
+        "android_client_info": {
+          "package_name": "com.example.neighbor_hub_admin_panel"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1057077701872-u3c4qgk2ii56lhcp2oitotmunn9114ng.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6stV18j-ZbemaT5V5wR7tYwj1JbqyNd8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1057077701872-u3c4qgk2ii56lhcp2oitotmunn9114ng.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1057077701872-c25ihktus4rqgku10lf3h6c89evfmvau.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.neighborHubAdminPanel"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
