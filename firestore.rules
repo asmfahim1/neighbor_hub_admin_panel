@@ -46,39 +46,82 @@ service cloud.firestore {
 
     function isPublicUserCreate() {
       return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.displayName is string
+        && request.resource.data.authProvider in ["google", "password"]
         && request.resource.data.buildingId == null
         && request.resource.data.apartmentId == null;
     }
 
     function isSelfPublicUserUpdate() {
       return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.displayName is string
         && request.resource.data.buildingId == resource.data.buildingId
-        && request.resource.data.apartmentId == resource.data.apartmentId;
+        && request.resource.data.apartmentId == resource.data.apartmentId
+        && request.resource.data.createdAt == resource.data.createdAt;
     }
 
-    function isAdminPublicUserUpdate() {
-      return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+    // First-time apartment approval: null -> assigned. Both buildingId and
+    // apartmentId move together, exactly once, into the admin's own building.
+    function isAdminApprovalUpdate() {
+      return resource.data.buildingId == null
+        && resource.data.apartmentId == null
         && request.resource.data.buildingId != null
         && request.resource.data.apartmentId != null
         && isAdminOf(request.resource.data.buildingId);
     }
 
+    // Resident removal / deletion approval: apartmentId is released back to
+    // null. buildingId is left untouched (single-building MVP; the account
+    // is deactivated via accountStatus, not by erasing building history).
+    function isAdminRemovalUpdate() {
+      return resource.data.apartmentId != null
+        && request.resource.data.apartmentId == null
+        && request.resource.data.buildingId == resource.data.buildingId
+        && isAdminOf(resource.data.buildingId);
+    }
+
+    function isAdminPublicUserUpdate() {
+      return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.displayName == resource.data.displayName
+        && request.resource.data.authProvider == resource.data.authProvider
+        && request.resource.data.photoUrl == resource.data.photoUrl
+        && request.resource.data.createdAt == resource.data.createdAt
+        && (isAdminApprovalUpdate() || isAdminRemovalUpdate());
+    }
+
     function isSelfPrivateCreate() {
       return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
+        && request.resource.data.email is string
         && request.resource.data.role == "resident"
         && request.resource.data.accountStatus == "active";
     }
 
     function isSelfPrivateUpdate() {
       return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
-        && request.resource.data.role == resource.data.role
+        && request.resource.data.email is string
+        && request.resource.data.createdAt == resource.data.createdAt
+        // Self-elevation ("resident" -> "admin") is always blocked. Voluntary
+        // self-demotion ("admin" -> "resident") is allowed so an outgoing
+        // admin can hand off the role and then leave the building normally,
+        // without needing the incoming admin to act on their behalf.
+        && (
+          request.resource.data.role == resource.data.role
+          || (resource.data.role == "admin" && request.resource.data.role == "resident")
+        )
         && request.resource.data.accountStatus in [resource.data.accountStatus, "deletion_requested"];
     }
 
     function isAdminPrivateUpdate(targetUid) {
-      return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
-        && isAdminOf(userDoc(targetUid).data.buildingId)
-        && request.auth.uid != targetUid;
+      return isAdminOf(userDoc(targetUid).data.buildingId)
+        && request.auth.uid != targetUid
+        && request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
+        // Admin may only move role/accountStatus; email and fcmToken belong
+        // to the owning user alone and must never be admin-writable.
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.fcmToken == resource.data.fcmToken
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.role in ["resident", "admin"]
+        && request.resource.data.accountStatus in ["active", "removed"];
     }
 
     function isPostAuthor(postId) {
@@ -92,6 +135,36 @@ service cloud.firestore {
       return request.resource.data.isAnonymous == true
         ? request.resource.data.authorUid == null
         : request.resource.data.authorUid == request.auth.uid;
+    }
+
+    // Fields that must never move on a `posts/{postId}` update, regardless
+    // of whether the author or an admin is making the edit.
+    function isUnchangedPostCore() {
+      return request.resource.data.buildingId == resource.data.buildingId
+        && request.resource.data.authorUid == resource.data.authorUid
+        && request.resource.data.isAnonymous == resource.data.isAnonymous
+        && request.resource.data.reactionCount == resource.data.reactionCount
+        && request.resource.data.commentCount == resource.data.commentCount
+        && request.resource.data.bookmarkCount == resource.data.bookmarkCount
+        && request.resource.data.createdAt == resource.data.createdAt;
+    }
+
+    function isAuthorPostEdit(postId) {
+      return isPostAuthor(postId)
+        && isUnchangedPostCore()
+        && request.resource.data.text is string
+        && isAllowedPostCategory(request.resource.data.category)
+        && request.resource.data.isPinned == resource.data.isPinned
+        && request.resource.data.isLocked == resource.data.isLocked;
+    }
+
+    function isAdminPostModeration() {
+      return isAdminOf(resource.data.buildingId)
+        && isUnchangedPostCore()
+        && request.resource.data.text == resource.data.text
+        && request.resource.data.category == resource.data.category
+        && request.resource.data.isPinned is bool
+        && request.resource.data.isLocked is bool;
     }
 
     match /buildings/{buildingId} {
@@ -114,8 +187,11 @@ service cloud.firestore {
     }
 
     match /apartments/{apartmentId} {
+      // `occupied` requires a bound resident, and every other status
+      // requires the binding to be cleared -- the two can never desync.
       function isOccupiedWriteValid() {
-        return request.resource.data.status != "occupied" || request.resource.data.primaryResidentUid != null;
+        return (request.resource.data.status == "occupied" && request.resource.data.primaryResidentUid != null)
+          || (request.resource.data.status != "occupied" && request.resource.data.primaryResidentUid == null);
       }
 
       allow read: if isBuildingMember(resource.data.buildingId);
@@ -134,7 +210,18 @@ service cloud.firestore {
         && request.resource.data.status == "pending"
         && request.resource.data.decidedBy == null
         && request.resource.data.decidedAt == null;
-      allow update: if isAdminOf(resource.data.buildingId);
+      // Only a still-pending request can be decided, only status/decidedBy/
+      // decidedAt may change, and decidedBy must be the acting admin -- not
+      // an arbitrary uid the client could otherwise attribute the decision to.
+      allow update: if isAdminOf(resource.data.buildingId)
+        && resource.data.status == "pending"
+        && request.resource.data.buildingId == resource.data.buildingId
+        && request.resource.data.apartmentId == resource.data.apartmentId
+        && request.resource.data.familyNote == resource.data.familyNote
+        && request.resource.data.createdAt == resource.data.createdAt
+        && request.resource.data.status in ["approved", "rejected"]
+        && request.resource.data.decidedBy == request.auth.uid
+        && request.resource.data.decidedAt is timestamp;
       allow delete: if false;
     }
 
@@ -142,6 +229,8 @@ service cloud.firestore {
       allow read: if isBuildingMember(resource.data.buildingId);
       allow create: if isBuildingMember(request.resource.data.buildingId)
         && request.resource.data.keys().hasOnly(["buildingId", "authorUid", "isAnonymous", "category", "text", "isPinned", "isLocked", "reactionCount", "commentCount", "bookmarkCount", "createdAt", "updatedAt"])
+        && request.resource.data.text is string
+        && request.resource.data.isAnonymous is bool
         && isAllowedPostCategory(request.resource.data.category)
         && isPostAuthorForCreate()
         && request.resource.data.isPinned == false
@@ -149,8 +238,12 @@ service cloud.firestore {
         && request.resource.data.reactionCount == 0
         && request.resource.data.commentCount == 0
         && request.resource.data.bookmarkCount == 0;
-      allow update: if (isPostAuthor(postId) && request.resource.data.text is string && request.resource.data.category is string && request.resource.data.isPinned == resource.data.isPinned && request.resource.data.isLocked == resource.data.isLocked)
-        || (isAdminOf(resource.data.buildingId) && request.resource.data.text == resource.data.text && request.resource.data.category == resource.data.category);
+      // Author may edit text/category only (category may legitimately be
+      // null -- an uncategorized/anonymous-by-default post must stay
+      // editable). Admin may only flip isPinned/isLocked, never the content.
+      // Neither side can touch buildingId, authorUid, isAnonymous, or the
+      // denormalized counters through this path.
+      allow update: if isAuthorPostEdit(postId) || isAdminPostModeration();
       allow delete: if isPostAuthor(postId) || isAdminOf(resource.data.buildingId);
     }
 
@@ -172,10 +265,12 @@ service cloud.firestore {
         && request.resource.data.authorUid == request.auth.uid
         && isBuildingMember(get(/databases/$(database)/documents/posts/$(postId)).data.buildingId)
         && get(/databases/$(database)/documents/posts/$(postId)).data.isLocked == false;
+      // Comments are never anonymous, so only the comment's own author or an
+      // admin may edit/delete it -- a post's author has no special power
+      // over other residents' comments (03_RESIDENT_SYSTEM.md SS6.2).
       allow update, delete: if signedIn()
         && (
           resource.data.authorUid == request.auth.uid
-          || get(/databases/$(database)/documents/posts/$(postId)).data.authorUid == request.auth.uid
           || isAdminOf(get(/databases/$(database)/documents/posts/$(postId)).data.buildingId)
         );
     }
