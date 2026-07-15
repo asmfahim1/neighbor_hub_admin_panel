@@ -25,8 +25,8 @@ class App extends StatelessWidget {
         builder: (context, settings) {
           return MaterialApp(
             title: 'Arcle Demo',
-            theme: AppTheme.light(),
-            darkTheme: AppTheme.dark(),
+            theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
             themeMode: settings.themeMode,
             locale: settings.locale,
             supportedLocales: AppStrings.supportedLocales,

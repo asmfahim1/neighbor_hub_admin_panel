@@ -1,172 +1,151 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:neighbor_hub_admin_panel/core/utils/app_colors.dart';
 
 class AppTheme {
-  // All app-wide colors live here.
-  static const _brand = Color(0xFF2C3E50);
-  static const _accent = Color(0xFF18BC9C);
-  static const _surface = Color(0xFFF5F7FA);
-  static const _error = Color(0xFFE74C3C);
-  static const _darkSurface = Color(0xFF12161C);
-  static const _darkBackground = Color(0xFF0E1116);
+  AppTheme._();
 
-  // Update typography here to affect all text in the app.
-  static final _textTheme = GoogleFonts.poppinsTextTheme(
-    const TextTheme(
-      headlineSmall: TextStyle(fontWeight: FontWeight.w700),
-      titleMedium: TextStyle(fontWeight: FontWeight.w600),
-      bodyMedium: TextStyle(fontSize: 15),
-    ),
-  );
-
-  static ThemeData light() {
+  /// LIGHT THEME: Modern Estate
+  static ThemeData get lightTheme {
     return ThemeData(
-      useMaterial3: true,
-      // Backgrounds and main brand palette.
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _brand,
-        primary: _brand,
-        secondary: _accent,
-        surface: _surface,
-        error: _error,
+      brightness: Brightness.light,
+
+      // Core Brand Colors
+      primaryColor: AppColors.brandNavyLight,
+      scaffoldBackgroundColor: AppColors.lightBackground,
+
+      // Color Scheme (Affects Buttons, Inputs, Selections globally)
+      colorScheme: const ColorScheme.light(
+        primary: AppColors.brandNavyLight,
+        secondary: AppColors.accentCopper,
+        surface: AppColors.lightSurface,
+        onPrimary: Colors.white,
+        onSecondary: Colors.white,
+        onSurface: AppColors.lightTextPrimary,
+        error: AppColors.error,
       ),
-      // Text across the entire app (titles, body, captions).
-      textTheme: _textTheme,
-      // App-wide background (Scaffold).
-      scaffoldBackgroundColor: _surface,
-      // App bar styling (top navigation).
+
+      // Typography Mapping
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppColors.lightTextPrimary, fontWeight: FontWeight.bold),
+        bodyLarge: TextStyle(color: AppColors.lightTextPrimary),
+        bodyMedium: TextStyle(color: AppColors.lightTextSecondary),
+        labelLarge: TextStyle(color: AppColors.lightTextPrimary, fontWeight: FontWeight.w600),
+      ),
+
+      // Component Themes (Global styling for specific widgets)
+      cardTheme: CardTheme(
+        color: AppColors.lightSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.lightBorder, width: 1),
+        ),
+      ),
+
       appBarTheme: const AppBarTheme(
-        backgroundColor: _brand,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.lightSurface,
+        foregroundColor: AppColors.lightTextPrimary,
         elevation: 0,
         centerTitle: true,
       ),
-      // Bottom navigation bar (legacy).
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Colors.white,
-        selectedItemColor: _brand,
-        unselectedItemColor: Colors.black54,
-        showUnselectedLabels: true,
-      ),
-      // Navigation bar (Material 3).
-      navigationBarTheme: const NavigationBarThemeData(
-        backgroundColor: Colors.white,
-        indicatorColor: Color(0x1A2C3E50),
-        labelTextStyle: MaterialStatePropertyAll(
-          TextStyle(fontWeight: FontWeight.w600),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.brandNavyLight,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
-      // Drawer panel styling.
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: Colors.white,
-        scrimColor: Color(0x662C3E50),
-      ),
-      // Text fields and input boxes.
-      inputDecorationTheme: const InputDecorationTheme(
+
+      inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
-        border: OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: _brand, width: 1.5),
+        fillColor: AppColors.lightSurface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.lightBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.black12),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.lightBorder),
         ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: _error),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.brandNavyLight, width: 2),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      ),
-      // Dropdowns using Material 3 dropdown menu.
-      dropdownMenuTheme: const DropdownMenuThemeData(
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Colors.white,
-          border: OutlineInputBorder(),
-        ),
-      ),
-      // Chips (filters, tags).
-      chipTheme: const ChipThemeData(
-        backgroundColor: Color(0xFFE8EEF3),
-        selectedColor: _brand,
-        labelStyle: TextStyle(color: Colors.black87),
-        secondaryLabelStyle: TextStyle(color: Colors.white),
-      ),
-      // Snackbars / lightweight feedback.
-      snackBarTheme: const SnackBarThemeData(
-        backgroundColor: _brand,
-        contentTextStyle: TextStyle(color: Colors.white),
       ),
     );
   }
 
-  static ThemeData dark() {
+  /// DARK THEME: Midnight Penthouse
+  static ThemeData get darkTheme {
     return ThemeData(
-      useMaterial3: true,
-      colorScheme: ColorScheme.fromSeed(
-        seedColor: _accent,
-        brightness: Brightness.dark,
-        primary: _accent,
-        secondary: _brand,
-        surface: _darkSurface,
-        error: _error,
+      brightness: Brightness.dark,
+
+      // Core Brand Colors
+      primaryColor: AppColors.brandNavyDark,
+      scaffoldBackgroundColor: AppColors.darkBackground,
+
+      // Color Scheme
+      colorScheme: const ColorScheme.dark(
+        primary: AppColors.brandNavyDark,
+        secondary: AppColors.accentAmber,
+        surface: AppColors.darkSurface,
+        onPrimary: Colors.white,
+        onSecondary: Colors.black,
+        onSurface: AppColors.darkTextPrimary,
+        error: AppColors.error,
       ),
-      textTheme: _textTheme,
-      scaffoldBackgroundColor: _darkBackground,
+
+      // Typography Mapping
+      textTheme: const TextTheme(
+        displayLarge: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.bold),
+        bodyLarge: TextStyle(color: AppColors.darkTextPrimary),
+        bodyMedium: TextStyle(color: AppColors.darkTextSecondary),
+        labelLarge: TextStyle(color: AppColors.darkTextPrimary, fontWeight: FontWeight.w600),
+      ),
+
+      // Component Themes
+      cardTheme: CardTheme(
+        color: AppColors.darkSurface,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: const BorderSide(color: AppColors.darkBorder, width: 1),
+        ),
+      ),
+
       appBarTheme: const AppBarTheme(
-        backgroundColor: _darkSurface,
-        foregroundColor: Colors.white,
+        backgroundColor: AppColors.darkSurface,
+        foregroundColor: AppColors.darkTextPrimary,
         elevation: 0,
         centerTitle: true,
       ),
-      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-        backgroundColor: Color(0xFF1B2028),
-        selectedItemColor: _accent,
-        unselectedItemColor: Colors.white70,
-        showUnselectedLabels: true,
-      ),
-      navigationBarTheme: const NavigationBarThemeData(
-        backgroundColor: Color(0xFF1B2028),
-        indicatorColor: Color(0x332C3E50),
-        labelTextStyle: MaterialStatePropertyAll(
-          TextStyle(fontWeight: FontWeight.w600),
+
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.brandNavyDark,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       ),
-      drawerTheme: const DrawerThemeData(
-        backgroundColor: Color(0xFF1B2028),
-        scrimColor: Color(0x662C3E50),
-      ),
-      inputDecorationTheme: const InputDecorationTheme(
+
+      inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Color(0xFF1B2028),
-        border: OutlineInputBorder(),
-        focusedBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: _accent, width: 1.5),
+        fillColor: AppColors.darkSurface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: Colors.white24),
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.darkBorder),
         ),
-        errorBorder: OutlineInputBorder(
-          borderSide: BorderSide(color: _error),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: AppColors.brandNavyDark, width: 2),
         ),
-        contentPadding: EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      ),
-      dropdownMenuTheme: const DropdownMenuThemeData(
-        inputDecorationTheme: InputDecorationTheme(
-          filled: true,
-          fillColor: Color(0xFF1B2028),
-          border: OutlineInputBorder(),
-        ),
-      ),
-      chipTheme: const ChipThemeData(
-        backgroundColor: Color(0xFF202631),
-        selectedColor: _accent,
-        labelStyle: TextStyle(color: Colors.white70),
-        secondaryLabelStyle: TextStyle(color: Colors.black),
-      ),
-      snackBarTheme: const SnackBarThemeData(
-        backgroundColor: _accent,
-        contentTextStyle: TextStyle(color: Colors.black),
       ),
     );
   }
