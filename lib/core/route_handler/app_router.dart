@@ -1,23 +1,50 @@
 import 'package:flutter/material.dart';
 
-import '../../features/demo/presentation/pages/splash_screen.dart';
-import '../../features/demo/presentation/pages/login_screen.dart';
 import '../../features/settings/presentation/settings_screen.dart';
-import '../../features/demo/presentation/pages/user_list_screen.dart';
 import 'app_routes.dart';
 // arcle:feature_imports
+import '../../features/auth/presentation/pages/auth_screen.dart';
+import '../../features/profile/presentation/pages/profile_screen.dart';
+import '../../features/notifications/presentation/pages/notifications_screen.dart';
+import '../../features/chat/presentation/pages/chat_screen.dart';
+import '../../features/analytics/presentation/pages/analytics_screen.dart';
+import '../../features/polls/presentation/pages/polls_screen.dart';
+import '../../features/announcements/presentation/pages/announcements_screen.dart';
+import '../../features/moderation/presentation/pages/moderation_screen.dart';
+import '../../features/residents/presentation/pages/residents_screen.dart';
+import '../../features/apartments/presentation/pages/apartments_screen.dart';
+import '../../features/buildings/presentation/pages/buildings_screen.dart';
+import '../../features/dashboard/presentation/pages/dashboard_screen.dart';
 
 class AppRouter {
   static Route<dynamic> onGenerateRoute(RouteSettings settings) {
     switch (settings.name) {
-      case AppRoutes.splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
-      case AppRoutes.login:
-        return MaterialPageRoute(builder: (_) => const LoginScreen());
-      case AppRoutes.users:
-        return MaterialPageRoute(builder: (_) => const UsersListScreen());
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+            case AppRoutes.dashboard:
+        return MaterialPageRoute(builder: (_) => const DashboardScreen());
+            case AppRoutes.buildings:
+        return MaterialPageRoute(builder: (_) => const BuildingsScreen());
+            case AppRoutes.apartments:
+        return MaterialPageRoute(builder: (_) => const ApartmentsScreen());
+            case AppRoutes.residents:
+        return MaterialPageRoute(builder: (_) => const ResidentsScreen());
+            case AppRoutes.moderation:
+        return MaterialPageRoute(builder: (_) => const ModerationScreen());
+            case AppRoutes.announcements:
+        return MaterialPageRoute(builder: (_) => const AnnouncementsScreen());
+            case AppRoutes.polls:
+        return MaterialPageRoute(builder: (_) => const PollsScreen());
+            case AppRoutes.analytics:
+        return MaterialPageRoute(builder: (_) => const AnalyticsScreen());
+            case AppRoutes.chat:
+        return MaterialPageRoute(builder: (_) => const ChatScreen());
+            case AppRoutes.notifications:
+        return MaterialPageRoute(builder: (_) => const NotificationsScreen());
+            case AppRoutes.profile:
+        return MaterialPageRoute(builder: (_) => const ProfileScreen());
+            case AppRoutes.auth:
+        return MaterialPageRoute(builder: (_) => const AuthScreen());
       // arcle:feature_cases
       default:
         return MaterialPageRoute(

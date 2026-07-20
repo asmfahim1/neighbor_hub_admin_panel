@@ -12,6 +12,7 @@ import '../core/route_handler/app_routes.dart';
 
 import '../core/route_handler/app_route_observer.dart';
 import '../core/theme_handler/app_theme.dart';
+import '../core/utils/dimensions.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -24,7 +25,7 @@ class App extends StatelessWidget {
         bloc: getIt<AppSettingsCubit>(),
         builder: (context, settings) {
           return MaterialApp(
-            title: 'Arcle Demo',
+            title: 'NeighborHub Admin',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
             themeMode: settings.themeMode,
@@ -37,6 +38,7 @@ class App extends StatelessWidget {
               GlobalCupertinoLocalizations.delegate,
             ],
             builder: (context, child) {
+              Dimensions.init(context);
               final media = MediaQuery.of(context);
               return MediaQuery(
                 data: media.copyWith(

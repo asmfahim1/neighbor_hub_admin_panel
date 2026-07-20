@@ -9,5 +9,17 @@
   "retry": "আবার চেষ্টা করুন",
   "theme": "থিম",
   "dark_mode": "ডার্ক মোড",
-  "language": "ভাষা"
+  "language": "ভাষা",
+  "dashboard_title": "Dashboard",
+  "buildings_title": "Buildings",
+  "apartments_title": "Apartments",
+  "residents_title": "Residents",
+  "moderation_title": "Moderation",
+  "announcements_title": "Announcements",
+  "polls_title": "Polls",
+  "analytics_title": "Analytics",
+  "chat_title": "Chat",
+  "notifications_title": "Notifications",
+  "profile_title": "Profile",
+  "auth_title": "Auth"
 }

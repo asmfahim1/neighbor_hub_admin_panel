@@ -1,15 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../features/demo/presentation/bloc/auth_bloc.dart';
-import '../../features/demo/presentation/bloc/users_bloc.dart';
-import '../../features/demo/domain/usecases/login_usecase.dart';
-import '../../features/demo/domain/usecases/logout_usecase.dart';
-import '../../features/demo/domain/usecases/get_users_usecase.dart';
 import '../../features/settings/presentation/app_settings_cubit.dart';
 import '../session_manager/pref_manager.dart';
 import 'injection.dart';
 // arcle:feature_imports
+import '../../features/auth/presentation/bloc/auth_bloc.dart';
+import '../../features/auth/domain/usecase/auth_usecase.dart';
+import '../../features/profile/presentation/bloc/profile_bloc.dart';
+import '../../features/profile/domain/usecase/profile_usecase.dart';
+import '../../features/notifications/presentation/bloc/notifications_bloc.dart';
+import '../../features/notifications/domain/usecase/notifications_usecase.dart';
+import '../../features/chat/presentation/bloc/chat_bloc.dart';
+import '../../features/chat/domain/usecase/chat_usecase.dart';
+import '../../features/analytics/presentation/bloc/analytics_bloc.dart';
+import '../../features/analytics/domain/usecase/analytics_usecase.dart';
+import '../../features/polls/presentation/bloc/polls_bloc.dart';
+import '../../features/polls/domain/usecase/polls_usecase.dart';
+import '../../features/announcements/presentation/bloc/announcements_bloc.dart';
+import '../../features/announcements/domain/usecase/announcements_usecase.dart';
+import '../../features/moderation/presentation/bloc/moderation_bloc.dart';
+import '../../features/moderation/domain/usecase/moderation_usecase.dart';
+import '../../features/residents/presentation/bloc/residents_bloc.dart';
+import '../../features/residents/domain/usecase/residents_usecase.dart';
+import '../../features/apartments/presentation/bloc/apartments_bloc.dart';
+import '../../features/apartments/domain/usecase/apartments_usecase.dart';
+import '../../features/buildings/presentation/bloc/buildings_bloc.dart';
+import '../../features/buildings/domain/usecase/buildings_usecase.dart';
+import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import '../../features/dashboard/domain/usecase/dashboard_usecase.dart';
 
 /// Centralized BLoC providers for the application.
 /// 
@@ -21,15 +40,18 @@ class AppBlocProviders {
     BlocProvider<AppSettingsCubit>(
       create: (_) => AppSettingsCubit(getIt<PrefManager>()),
     ),
-    BlocProvider<AuthBloc>(
-      create: (_) => AuthBloc(
-        getIt<LoginUseCase>(),
-        getIt<LogoutUseCase>(),
-      ),
-    ),
-    BlocProvider<UsersBloc>(
-      create: (_) => UsersBloc(getIt<GetUsersUseCase>()),
-    ),
+        BlocProvider<DashboardBloc>(create: (_) => DashboardBloc(getIt<DashboardUseCase>())),
+        BlocProvider<BuildingsBloc>(create: (_) => BuildingsBloc(getIt<BuildingsUseCase>())),
+        BlocProvider<ApartmentsBloc>(create: (_) => ApartmentsBloc(getIt<ApartmentsUseCase>())),
+        BlocProvider<ResidentsBloc>(create: (_) => ResidentsBloc(getIt<ResidentsUseCase>())),
+        BlocProvider<ModerationBloc>(create: (_) => ModerationBloc(getIt<ModerationUseCase>())),
+        BlocProvider<AnnouncementsBloc>(create: (_) => AnnouncementsBloc(getIt<AnnouncementsUseCase>())),
+        BlocProvider<PollsBloc>(create: (_) => PollsBloc(getIt<PollsUseCase>())),
+        BlocProvider<AnalyticsBloc>(create: (_) => AnalyticsBloc(getIt<AnalyticsUseCase>())),
+        BlocProvider<ChatBloc>(create: (_) => ChatBloc(getIt<ChatUseCase>())),
+        BlocProvider<NotificationsBloc>(create: (_) => NotificationsBloc(getIt<NotificationsUseCase>())),
+        BlocProvider<ProfileBloc>(create: (_) => ProfileBloc(getIt<ProfileUseCase>())),
+        BlocProvider<AuthBloc>(create: (_) => AuthBloc(getIt<AuthUseCase>())),
     // arcle:feature_providers
   ];
 

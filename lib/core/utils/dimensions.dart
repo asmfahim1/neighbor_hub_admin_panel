@@ -1,17 +1,61 @@
 import 'dart:ui' as ui;
 import 'package:flutter/widgets.dart';
 
-class Dimensions {
-  static double get _screenHeight =>
-      ui.PlatformDispatcher.instance.views.first.physicalSize.height /
-      ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
-  static double get _screenWidth =>
-      ui.PlatformDispatcher.instance.views.first.physicalSize.width /
-      ui.PlatformDispatcher.instance.views.first.devicePixelRatio;
+/// Coarse device class used to pick which mockup (mobile vs. web) to scale
+/// against. Mirrors the two product surfaces described in
+/// `docs/admen_web_app_ui_functionality.md` §1 (Admin App vs. Admin Web Portal).
+enum DeviceType { mobile, tablet, web }
 
-  // Base design size from Figma (iPhone SE or similar mobile design)
-  static const double _mockupHeight = 884.0;
-  static const double _mockupWidth = 390.0;
+class Dimensions {
+  Dimensions._();
+
+  /// Call once per build (e.g. in the `MaterialApp.builder`) so sizing is
+  /// computed from the real layout `BuildContext` (`MediaQuery`) instead of
+  /// the raw physical display size. Required for the Web Portal, where the
+  /// browser window/tab size is what matters, not the monitor's resolution.
+  static void init(BuildContext context) => _context = context;
+
+  static BuildContext? _context;
+
+  /// Width at/above which the layout is treated as the Web Portal (desktop
+  /// sidebar layout), per `04_UI_UX_GUIDELINES.md` §11 breakpoints.
+  static const double webBreakpoint = 1024.0;
+
+  /// Width at/above which the layout is treated as a tablet (rail nav),
+  /// below which it's a phone (bottom nav).
+  static const double tabletBreakpoint = 600.0;
+
+  static Size get _windowSize {
+    final context = _context;
+    if (context != null) return MediaQuery.of(context).size;
+    final view = ui.PlatformDispatcher.instance.views.first;
+    return view.physicalSize / view.devicePixelRatio;
+  }
+
+  static double get _screenHeight => _windowSize.height;
+  static double get _screenWidth => _windowSize.width;
+
+  /// Current device class, derived from the live window/screen width.
+  static DeviceType get deviceType {
+    if (_screenWidth >= webBreakpoint) return DeviceType.web;
+    if (_screenWidth >= tabletBreakpoint) return DeviceType.tablet;
+    return DeviceType.mobile;
+  }
+
+  static bool get isMobile => deviceType == DeviceType.mobile;
+  static bool get isTablet => deviceType == DeviceType.tablet;
+  static bool get isWeb => deviceType == DeviceType.web;
+
+  // Base design sizes from Figma.
+  // Mobile/tablet: phone mockup (Admin App). Web: desktop mockup (Admin Web Portal).
+  static const double _mobileMockupHeight = 884.0;
+  static const double _mobileMockupWidth = 390.0;
+  static const double _webMockupHeight = 1024.0;
+  static const double _webMockupWidth = 1440.0;
+
+  static double get _mockupHeight =>
+      isWeb ? _webMockupHeight : _mobileMockupHeight;
+  static double get _mockupWidth => isWeb ? _webMockupWidth : _mobileMockupWidth;
 
   // Scale factors for responsive design
   static double get _heightRatio => _screenHeight / _mockupHeight;
