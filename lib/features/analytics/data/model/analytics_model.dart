@@ -1,22 +1,4 @@
-import '../../domain/entity/analytics_entity.dart';
-
-class AnalyticsModel {
-  AnalyticsModel({
-    required this.id,
-    required this.title,
-  });
-
-  final String id;
-  final String title;
-
-  factory AnalyticsModel.fromJson(Map<String, dynamic> json) {
-    return AnalyticsModel(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
-    );
-  }
-
-  AnalyticsEntity toEntity() {
-    return AnalyticsEntity(id: id, title: title);
-  }
-}
+// No feature-local model: the Analytics feature reads `ApartmentEntity`,
+// `PostEntity`, and `PollEntity` directly from `core/models/` and composes
+// them into `AnalyticsEntity` — a feature-local *aggregate*, not a 1:1
+// Firestore document mirror. See `lib/core/models/README.md`.

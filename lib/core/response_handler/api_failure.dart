@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 /// Represents all possible failure types in the application.
 /// 
@@ -71,7 +72,77 @@ sealed class AppFailure {
     if (e is DioException) {
       return AppFailure.fromDioException(e);
     }
+    if (e is FirebaseAuthException) {
+      return AppFailure.fromFirebaseAuthException(e, stack);
+    }
+    if (e is FirebaseException) {
+      return AppFailure.fromFirestoreException(e, stack);
+    }
     return UnknownFailure(e.toString(), e);
+  }
+
+  /// Maps a [FirebaseAuthException] code to human-readable copy — never
+  /// surface a raw Firebase error string to the admin (cross-cutting rule,
+  /// `admen_web_app_ui_functionality.md` §5).
+  factory AppFailure.fromFirebaseAuthException(
+    FirebaseAuthException e, [
+    StackTrace? stack,
+  ]) {
+    final message = switch (e.code) {
+      'invalid-email' => 'That email address looks invalid.',
+      'user-disabled' => 'This account has been disabled.',
+      'user-not-found' => 'No account found for that email.',
+      'wrong-password' || 'invalid-credential' =>
+        'Incorrect email or password.',
+      'email-already-in-use' => 'An account already exists for that email.',
+      'weak-password' => 'Please choose a stronger password.',
+      'too-many-requests' =>
+        'Too many attempts. Please wait a moment and try again.',
+      'network-request-failed' =>
+        'No internet connection. Please check your network.',
+      'operation-not-allowed' => 'This sign-in method is not enabled.',
+      'account-exists-with-different-credential' =>
+        'An account already exists with a different sign-in method.',
+      _ => e.message ?? 'Sign-in failed. Please try again.',
+    };
+
+    return switch (e.code) {
+      'network-request-failed' => NetworkFailure(message),
+      'user-not-found' || 'wrong-password' || 'invalid-credential' =>
+        UnauthorizedFailure(message),
+      'email-already-in-use' || 'weak-password' || 'invalid-email' =>
+        ValidationFailure(message),
+      _ => UnknownFailure(message, e),
+    };
+  }
+
+  /// Maps a Firestore [FirebaseException] code to human-readable copy — e.g.
+  /// a rules rejection like "duplicate apartment request" becomes readable
+  /// copy instead of a raw `permission-denied` string.
+  factory AppFailure.fromFirestoreException(
+    FirebaseException e, [
+    StackTrace? stack,
+  ]) {
+    final message = switch (e.code) {
+      'permission-denied' =>
+        'This action isn\'t allowed. The request may already have been handled, or you may not have access.',
+      'not-found' => 'The requested item was not found.',
+      'already-exists' => 'This item already exists.',
+      'unavailable' || 'deadline-exceeded' =>
+        'No internet connection. Please check your network and try again.',
+      'cancelled' => 'The operation was cancelled.',
+      'resource-exhausted' =>
+        'Too many requests right now. Please try again shortly.',
+      _ => e.message ?? 'Something went wrong. Please try again.',
+    };
+
+    return switch (e.code) {
+      'permission-denied' => UnauthorizedFailure(message),
+      'not-found' => NotFoundFailure(message),
+      'already-exists' => ValidationFailure(message),
+      'unavailable' || 'deadline-exceeded' => NetworkFailure(message),
+      _ => UnknownFailure(message, e),
+    };
   }
   
   /// Create failure from HTTP response (non-2xx).

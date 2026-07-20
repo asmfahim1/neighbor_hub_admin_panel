@@ -1,31 +1,34 @@
 import 'package:equatable/equatable.dart';
+
 import '../../domain/entity/profile_entity.dart';
 
-enum ProfileStatus { initial, loading, success, failure }
+enum ProfileStatus { initial, loading, loaded, saving, signedOut, failure }
 
 class ProfileState extends Equatable {
   const ProfileState({
     this.status = ProfileStatus.initial,
-    this.items = const [],
+    this.profile,
     this.message,
   });
 
   final ProfileStatus status;
-  final List<ProfileEntity> items;
+  final UserEntity? profile;
   final String? message;
 
   ProfileState copyWith({
     ProfileStatus? status,
-    List<ProfileEntity>? items,
+    UserEntity? profile,
+    bool clearProfile = false,
     String? message,
+    bool clearMessage = false,
   }) {
     return ProfileState(
       status: status ?? this.status,
-      items: items ?? this.items,
-      message: message ?? this.message,
+      profile: clearProfile ? null : (profile ?? this.profile),
+      message: clearMessage ? null : (message ?? this.message),
     );
   }
 
   @override
-  List<Object?> get props => [status, items, message];
+  List<Object?> get props => [status, profile, message];
 }

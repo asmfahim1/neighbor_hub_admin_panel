@@ -1,22 +1,5 @@
-import '../../domain/entity/dashboard_entity.dart';
-
-class DashboardModel {
-  DashboardModel({
-    required this.id,
-    required this.title,
-  });
-
-  final String id;
-  final String title;
-
-  factory DashboardModel.fromJson(Map<String, dynamic> json) {
-    return DashboardModel(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
-    );
-  }
-
-  DashboardEntity toEntity() {
-    return DashboardEntity(id: id, title: title);
-  }
-}
+// No feature-local model: the Dashboard reads `ApartmentEntity`,
+// `ApartmentRequestEntity`, `PostEntity`, and `AnnouncementEntity` directly
+// from `core/models/` and composes them into `DashboardEntity` — a
+// feature-local *aggregate*, not a 1:1 Firestore document mirror. See
+// `lib/core/models/README.md`.

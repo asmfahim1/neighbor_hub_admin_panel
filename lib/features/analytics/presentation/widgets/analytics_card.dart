@@ -1,16 +1,2 @@
-import 'package:flutter/material.dart';
-import '../../domain/entity/analytics_entity.dart';
-
-class AnalyticsCard extends StatelessWidget {
-  const AnalyticsCard({super.key, required this.entity});
-
-  final AnalyticsEntity entity;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(entity.title),
-      subtitle: Text(entity.id),
-    );
-  }
-}
+// Placeholder removed: inlined directly into `analytics_screen.dart` for now
+// (see `analytics_plan.md` for the real UI task list, still pending design).

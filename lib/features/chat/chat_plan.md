@@ -24,6 +24,7 @@ guarantees.
 - [ ] Chat List screen (conversations the admin participates in)
 - [ ] Conversation screen (message thread, send box)
 - [ ] "Start chat" entry point from Resident Directory (tap a contact)
+- [ ] Participant status -> Online/Offline, Last Seen (time)
 
 ## Firebase Connection Tasks
 
@@ -32,3 +33,4 @@ guarantees.
 - [ ] Send message write to `conversations/{id}/messages`
 - [ ] Create a `notifications` doc for the recipient on new message (category: `chat`)
 - [ ] No special admin-only read/write path — same rules as any participant
+

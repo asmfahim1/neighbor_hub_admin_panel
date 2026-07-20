@@ -1,16 +1,2 @@
-import 'package:flutter/material.dart';
-import '../../domain/entity/polls_entity.dart';
-
-class PollsCard extends StatelessWidget {
-  const PollsCard({super.key, required this.entity});
-
-  final PollsEntity entity;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(entity.title),
-      subtitle: Text(entity.id),
-    );
-  }
-}
+// Placeholder removed: inlined directly into `polls_screen.dart` for now
+// (see `polls_plan.md` for the real UI task list, still pending design).

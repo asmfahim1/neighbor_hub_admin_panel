@@ -1,27 +1,57 @@
-import '../../../../core/api_client/api_service.dart';
-import '../../../../core/session_manager/session_manager.dart';
-import '../../../../core/utils/endpoints.dart';
 import 'package:injectable/injectable.dart';
 
-import '../model/analytics_model.dart';
+import '../../../../core/firebase/firestore_collections.dart';
+import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/models.dart';
 
-@lazySingleton
+/// The swappable "endpoint" boundary for the Analytics feature. A future
+/// custom backend adds `AnalyticsApiSource implements AnalyticsRemoteSource`
+/// and flips the DI binding — nothing in `domain/` or `data/repository` changes.
+abstract class AnalyticsRemoteSource {
+  Stream<List<ApartmentEntity>> watchApartments(String buildingId);
+  Stream<List<PostEntity>> watchPosts(String buildingId, {int limit});
+  Stream<List<PollEntity>> watchPolls(String buildingId);
+}
 
-class AnalyticsRemoteSource {
-  AnalyticsRemoteSource(this._api, this._session);
+@LazySingleton(as: AnalyticsRemoteSource)
+class AnalyticsFirestoreSource implements AnalyticsRemoteSource {
+  AnalyticsFirestoreSource(this._firestore);
 
-  final ApiService _api;
-  final SessionManager _session;
+  final FirestoreService _firestore;
 
-  Future<List<AnalyticsModel>> fetchData() async {
-    final token = await _session.getToken();
-    final response = await _api.get(ApiEndpoints.analyticsList, query: {
-      'token': token ?? '',
-    });
+  @override
+  Stream<List<ApartmentEntity>> watchApartments(String buildingId) {
+    final query = _firestore.buildingScoped(FirestoreCollections.apartments, buildingId);
+    return _firestore.watchQuery(query).map(
+          (snapshot) => snapshot.docs
+              .map((doc) => ApartmentEntity.fromJson(doc.data(), id: doc.id))
+              .toList(),
+        );
+  }
 
-    final data = (response.data as List<dynamic>? ?? []);
-    return data
-        .map((item) => AnalyticsModel.fromJson(item as Map<String, dynamic>))
-        .toList();
+  @override
+  Stream<List<PostEntity>> watchPosts(String buildingId, {int limit = 500}) {
+    // Matches the `(buildingId, createdAt desc)` composite index declared in
+    // `05_FIRESTORE_DATABASE.md` §5. `limit` bounds the read at this feature's
+    // documented single-building/~100-resident scale (§7.9) — a real
+    // historical window would need a stored time-series, which the schema
+    // deliberately doesn't have.
+    final query = _firestore
+        .buildingScoped(FirestoreCollections.posts, buildingId)
+        .orderBy(FirestoreFields.createdAt, descending: true)
+        .limit(limit);
+    return _firestore.watchQuery(query).map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => PostEntity.fromJson(doc.data(), id: doc.id)).toList(),
+        );
+  }
+
+  @override
+  Stream<List<PollEntity>> watchPolls(String buildingId) {
+    final query = _firestore.buildingScoped(FirestoreCollections.polls, buildingId);
+    return _firestore.watchQuery(query).map(
+          (snapshot) =>
+              snapshot.docs.map((doc) => PollEntity.fromJson(doc.data(), id: doc.id)).toList(),
+        );
   }
 }

@@ -1,22 +1,3 @@
-import '../../domain/entity/announcements_entity.dart';
-
-class AnnouncementsModel {
-  AnnouncementsModel({
-    required this.id,
-    required this.title,
-  });
-
-  final String id;
-  final String title;
-
-  factory AnnouncementsModel.fromJson(Map<String, dynamic> json) {
-    return AnnouncementsModel(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
-    );
-  }
-
-  AnnouncementsEntity toEntity() {
-    return AnnouncementsEntity(id: id, title: title);
-  }
-}
+// No feature-local model: `AnnouncementEntity` (from `core/models/`) is used
+// directly end-to-end. See `lib/core/models/README.md`.
+export '../../domain/entity/announcements_entity.dart';

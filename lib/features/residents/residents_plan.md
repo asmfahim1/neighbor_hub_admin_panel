@@ -2,7 +2,10 @@
 
 **Source:** `docs/admen_web_app_ui_functionality.md` §7.5 (§7.5.1–§7.5.4)
 **Arcle module:** `lib/features/residents/` (data/domain/presentation, BLoC)
-**Status:** Scaffolded only — no business logic implemented yet.
+**Status:** Data/domain/presentation wired to Firebase (two sub-items
+deferred pending required composite/collection-group indexes — see below).
+UI is still the arcle placeholder — real UI/UX is a separate pass once the
+design is ready.
 
 ## Overview
 

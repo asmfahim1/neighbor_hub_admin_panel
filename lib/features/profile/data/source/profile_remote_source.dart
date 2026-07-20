@@ -1,27 +1,62 @@
-import '../../../../core/api_client/api_service.dart';
-import '../../../../core/session_manager/session_manager.dart';
-import '../../../../core/utils/endpoints.dart';
 import 'package:injectable/injectable.dart';
 
-import '../model/profile_model.dart';
+import '../../../../core/firebase/firebase_auth_service.dart';
+import '../../../../core/firebase/firestore_collections.dart';
+import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/user_entity.dart';
 
-@lazySingleton
+/// The swappable "endpoint" boundary for the Profile feature. A future
+/// custom backend adds `ProfileApiSource implements ProfileRemoteSource` and
+/// flips the DI binding — nothing in `domain/` or `data/repository` changes.
+///
+/// Deliberately does NOT depend on the Auth feature's `domain`/`data` layers
+/// (illegal cross-feature coupling) — it injects `FirebaseAuthService`
+/// directly for sign-out, exactly like `AuthFirestoreSource` does.
+abstract class ProfileRemoteSource {
+  Stream<UserEntity?> watchOwnProfile(String uid);
 
-class ProfileRemoteSource {
-  ProfileRemoteSource(this._api, this._session);
+  Future<void> updateOwnProfile(
+    String uid, {
+    String? displayName,
+    String? photoUrl,
+  });
 
-  final ApiService _api;
-  final SessionManager _session;
+  Future<void> signOut();
+}
 
-  Future<List<ProfileModel>> fetchData() async {
-    final token = await _session.getToken();
-    final response = await _api.get(ApiEndpoints.profileList, query: {
-      'token': token ?? '',
+@LazySingleton(as: ProfileRemoteSource)
+class ProfileFirestoreSource implements ProfileRemoteSource {
+  ProfileFirestoreSource(this._firestore, this._auth);
+
+  final FirestoreService _firestore;
+  final FirebaseAuthService _auth;
+
+  @override
+  Stream<UserEntity?> watchOwnProfile(String uid) {
+    return _firestore.watchDocument(FirestorePaths.user(uid)).map((snapshot) {
+      final data = snapshot.data();
+      if (!snapshot.exists || data == null) return null;
+      return UserEntity.fromJson(data, uid: uid);
     });
+  }
 
-    final data = (response.data as List<dynamic>? ?? []);
-    return data
-        .map((item) => ProfileModel.fromJson(item as Map<String, dynamic>))
-        .toList();
+  @override
+  Future<void> updateOwnProfile(
+    String uid, {
+    String? displayName,
+    String? photoUrl,
+  }) async {
+    final updates = <String, dynamic>{
+      if (displayName != null) 'displayName': displayName,
+      if (photoUrl != null) 'photoUrl': photoUrl,
+    };
+    if (updates.isEmpty) return;
+    await _firestore.updateDocument(FirestorePaths.user(uid), updates);
+  }
+
+  @override
+  Future<void> signOut() async {
+    final result = await _auth.signOut();
+    result.fold((failure) => throw failure, (_) {});
   }
 }

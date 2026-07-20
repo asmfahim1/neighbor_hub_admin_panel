@@ -1,31 +1,54 @@
 import 'package:equatable/equatable.dart';
-import '../../domain/entity/moderation_entity.dart';
 
-enum ModerationStatus { initial, loading, success, failure }
+import '../../../../core/models/models.dart';
+
+enum ModerationStatus { initial, loading, loaded, mutating, failure }
 
 class ModerationState extends Equatable {
   const ModerationState({
     this.status = ModerationStatus.initial,
-    this.items = const [],
+    this.feed = const [],
+    this.openPostId,
+    this.comments = const [],
+    this.realAuthorUid,
     this.message,
   });
 
   final ModerationStatus status;
-  final List<ModerationEntity> items;
+  final List<PostEntity> feed;
+
+  /// The post whose comment thread is currently open, if any.
+  final String? openPostId;
+  final List<CommentEntity> comments;
+
+  /// Resolved via `post_authorship/{postId}` for [openPostId] (or whichever
+  /// post a reveal was last requested for) — always the true author.
+  final String? realAuthorUid;
+
   final String? message;
 
   ModerationState copyWith({
     ModerationStatus? status,
-    List<ModerationEntity>? items,
+    List<PostEntity>? feed,
+    String? openPostId,
+    bool clearOpenPostId = false,
+    List<CommentEntity>? comments,
+    String? realAuthorUid,
+    bool clearRealAuthorUid = false,
     String? message,
+    bool clearMessage = false,
   }) {
     return ModerationState(
       status: status ?? this.status,
-      items: items ?? this.items,
-      message: message ?? this.message,
+      feed: feed ?? this.feed,
+      openPostId: clearOpenPostId ? null : (openPostId ?? this.openPostId),
+      comments: clearOpenPostId ? const [] : (comments ?? this.comments),
+      realAuthorUid: clearRealAuthorUid ? null : (realAuthorUid ?? this.realAuthorUid),
+      message: clearMessage ? null : (message ?? this.message),
     );
   }
 
   @override
-  List<Object?> get props => [status, items, message];
+  List<Object?> get props =>
+      [status, feed, openPostId, comments, realAuthorUid, message];
 }

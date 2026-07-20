@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../bloc/auth_bloc.dart';
 import '../bloc/auth_state.dart';
-import '../widgets/auth_card.dart';
 
+/// Placeholder only — real UI/UX is a separate pass once the design is
+/// ready (`auth_plan.md`). This just proves the [AuthBloc] wiring compiles
+/// and renders something for each [AuthStatus].
 class AuthScreen extends StatelessWidget {
   const AuthScreen({super.key});
 
@@ -16,18 +18,15 @@ class AuthScreen extends StatelessWidget {
       body: BlocBuilder<AuthBloc, AuthState>(
         builder: (context, state) {
           switch (state.status) {
-            case AuthStatus.loading:
+            case AuthStatus.unknown:
+            case AuthStatus.authenticating:
               return const Center(child: CircularProgressIndicator());
             case AuthStatus.failure:
-              return Center(child: Text(state.message ?? 'Error'));
-            case AuthStatus.success:
-              return ListView.builder(
-                itemCount: state.items.length,
-                itemBuilder: (_, index) =>
-                    AuthCard(entity: state.items[index]),
-              );
-            case AuthStatus.initial:
-              return const SizedBox.shrink();
+              return Center(child: Text(state.message ?? 'Something went wrong.'));
+            case AuthStatus.authenticated:
+              return Center(child: Text('Signed in as ${state.session?.displayName ?? ''}'));
+            case AuthStatus.unauthenticated:
+              return const Center(child: Text('Sign in'));
           }
         },
       ),

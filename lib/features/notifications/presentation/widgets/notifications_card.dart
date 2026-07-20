@@ -1,16 +1,3 @@
-import 'package:flutter/material.dart';
-import '../../domain/entity/notifications_entity.dart';
-
-class NotificationsCard extends StatelessWidget {
-  const NotificationsCard({super.key, required this.entity});
-
-  final NotificationsEntity entity;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(entity.title),
-      subtitle: Text(entity.id),
-    );
-  }
-}
+// Placeholder removed: inlined directly into `notifications_screen.dart` for
+// now (see `notifications_plan.md` for the real UI task list, still pending
+// design).

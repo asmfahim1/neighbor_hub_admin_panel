@@ -6,7 +6,6 @@ import '../session_manager/pref_manager.dart';
 import 'injection.dart';
 // arcle:feature_imports
 import '../../features/auth/presentation/bloc/auth_bloc.dart';
-import '../../features/auth/domain/usecase/auth_usecase.dart';
 import '../../features/profile/presentation/bloc/profile_bloc.dart';
 import '../../features/profile/domain/usecase/profile_usecase.dart';
 import '../../features/notifications/presentation/bloc/notifications_bloc.dart';
@@ -24,11 +23,8 @@ import '../../features/moderation/domain/usecase/moderation_usecase.dart';
 import '../../features/residents/presentation/bloc/residents_bloc.dart';
 import '../../features/residents/domain/usecase/residents_usecase.dart';
 import '../../features/apartments/presentation/bloc/apartments_bloc.dart';
-import '../../features/apartments/domain/usecase/apartments_usecase.dart';
 import '../../features/buildings/presentation/bloc/buildings_bloc.dart';
-import '../../features/buildings/domain/usecase/buildings_usecase.dart';
 import '../../features/dashboard/presentation/bloc/dashboard_bloc.dart';
-import '../../features/dashboard/domain/usecase/dashboard_usecase.dart';
 
 /// Centralized BLoC providers for the application.
 /// 
@@ -40,9 +36,9 @@ class AppBlocProviders {
     BlocProvider<AppSettingsCubit>(
       create: (_) => AppSettingsCubit(getIt<PrefManager>()),
     ),
-        BlocProvider<DashboardBloc>(create: (_) => DashboardBloc(getIt<DashboardUseCase>())),
-        BlocProvider<BuildingsBloc>(create: (_) => BuildingsBloc(getIt<BuildingsUseCase>())),
-        BlocProvider<ApartmentsBloc>(create: (_) => ApartmentsBloc(getIt<ApartmentsUseCase>())),
+        BlocProvider<DashboardBloc>(create: (_) => getIt<DashboardBloc>()),
+        BlocProvider<BuildingsBloc>(create: (_) => getIt<BuildingsBloc>()),
+        BlocProvider<ApartmentsBloc>(create: (_) => getIt<ApartmentsBloc>()),
         BlocProvider<ResidentsBloc>(create: (_) => ResidentsBloc(getIt<ResidentsUseCase>())),
         BlocProvider<ModerationBloc>(create: (_) => ModerationBloc(getIt<ModerationUseCase>())),
         BlocProvider<AnnouncementsBloc>(create: (_) => AnnouncementsBloc(getIt<AnnouncementsUseCase>())),
@@ -51,7 +47,7 @@ class AppBlocProviders {
         BlocProvider<ChatBloc>(create: (_) => ChatBloc(getIt<ChatUseCase>())),
         BlocProvider<NotificationsBloc>(create: (_) => NotificationsBloc(getIt<NotificationsUseCase>())),
         BlocProvider<ProfileBloc>(create: (_) => ProfileBloc(getIt<ProfileUseCase>())),
-        BlocProvider<AuthBloc>(create: (_) => AuthBloc(getIt<AuthUseCase>())),
+        BlocProvider<AuthBloc>(create: (_) => getIt<AuthBloc>()),
     // arcle:feature_providers
   ];
 

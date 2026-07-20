@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../bloc/analytics_bloc.dart';
 import '../bloc/analytics_state.dart';
-import '../widgets/analytics_card.dart';
 
+/// Placeholder only — real UI/UX is a separate pass once the design is
+/// ready (`analytics_plan.md`). This just proves the [AnalyticsBloc] wiring
+/// compiles and renders something for each [AnalyticsStatus].
 class AnalyticsScreen extends StatelessWidget {
   const AnalyticsScreen({super.key});
 
@@ -16,18 +18,27 @@ class AnalyticsScreen extends StatelessWidget {
       body: BlocBuilder<AnalyticsBloc, AnalyticsState>(
         builder: (context, state) {
           switch (state.status) {
+            case AnalyticsStatus.initial:
             case AnalyticsStatus.loading:
               return const Center(child: CircularProgressIndicator());
             case AnalyticsStatus.failure:
-              return Center(child: Text(state.message ?? 'Error'));
-            case AnalyticsStatus.success:
-              return ListView.builder(
-                itemCount: state.items.length,
-                itemBuilder: (_, index) =>
-                    AnalyticsCard(entity: state.items[index]),
+              return Center(child: Text(state.message ?? 'Something went wrong.'));
+            case AnalyticsStatus.loaded:
+              final analytics = state.analytics;
+              return ListView(
+                children: [
+                  ListTile(title: Text('Residents: ${analytics.residentCount}')),
+                  ListTile(
+                    title: Text(
+                      'Occupancy: ${(analytics.occupancyRate * 100).toStringAsFixed(0)}%',
+                    ),
+                  ),
+                  ListTile(title: Text('Posts: ${analytics.totalPosts}')),
+                  ListTile(title: Text('Comments: ${analytics.totalComments}')),
+                  ListTile(title: Text('Reactions: ${analytics.totalReactions}')),
+                  ListTile(title: Text('Active polls: ${analytics.pollParticipation.length}')),
+                ],
               );
-            case AnalyticsStatus.initial:
-              return const SizedBox.shrink();
           }
         },
       ),

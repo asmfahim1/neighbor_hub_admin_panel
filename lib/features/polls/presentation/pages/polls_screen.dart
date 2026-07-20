@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../bloc/polls_bloc.dart';
 import '../bloc/polls_state.dart';
-import '../widgets/polls_card.dart';
 
+/// Placeholder only — real UI/UX is a separate pass once the design is
+/// ready (`polls_plan.md`). This just proves the [PollsBloc] wiring compiles
+/// and renders something for each [PollsStatus].
 class PollsScreen extends StatelessWidget {
   const PollsScreen({super.key});
 
@@ -16,18 +18,27 @@ class PollsScreen extends StatelessWidget {
       body: BlocBuilder<PollsBloc, PollsState>(
         builder: (context, state) {
           switch (state.status) {
-            case PollsStatus.loading:
-              return const Center(child: CircularProgressIndicator());
-            case PollsStatus.failure:
-              return Center(child: Text(state.message ?? 'Error'));
-            case PollsStatus.success:
-              return ListView.builder(
-                itemCount: state.items.length,
-                itemBuilder: (_, index) =>
-                    PollsCard(entity: state.items[index]),
-              );
             case PollsStatus.initial:
               return const SizedBox.shrink();
+            case PollsStatus.loading:
+            case PollsStatus.mutating:
+              return const Center(child: CircularProgressIndicator());
+            case PollsStatus.failure:
+              return Center(child: Text(state.message ?? 'Something went wrong.'));
+            case PollsStatus.loaded:
+              if (state.polls.isEmpty) {
+                return const Center(child: Text('No polls yet'));
+              }
+              return ListView.builder(
+                itemCount: state.polls.length,
+                itemBuilder: (_, index) {
+                  final poll = state.polls[index];
+                  return ListTile(
+                    title: Text(poll.question),
+                    subtitle: Text('${poll.status.value} — ${poll.totalVotes} votes'),
+                  );
+                },
+              );
           }
         },
       ),

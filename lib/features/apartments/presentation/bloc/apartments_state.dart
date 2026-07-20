@@ -1,31 +1,33 @@
 import 'package:equatable/equatable.dart';
+
 import '../../domain/entity/apartments_entity.dart';
 
-enum ApartmentsStatus { initial, loading, success, failure }
+enum ApartmentsStatus { initial, loading, loaded, mutating, failure }
 
 class ApartmentsState extends Equatable {
   const ApartmentsState({
     this.status = ApartmentsStatus.initial,
-    this.items = const [],
+    this.apartments = const [],
     this.message,
   });
 
   final ApartmentsStatus status;
-  final List<ApartmentsEntity> items;
+  final List<ApartmentEntity> apartments;
   final String? message;
 
   ApartmentsState copyWith({
     ApartmentsStatus? status,
-    List<ApartmentsEntity>? items,
+    List<ApartmentEntity>? apartments,
     String? message,
+    bool clearMessage = false,
   }) {
     return ApartmentsState(
       status: status ?? this.status,
-      items: items ?? this.items,
-      message: message ?? this.message,
+      apartments: apartments ?? this.apartments,
+      message: clearMessage ? null : (message ?? this.message),
     );
   }
 
   @override
-  List<Object?> get props => [status, items, message];
+  List<Object?> get props => [status, apartments, message];
 }

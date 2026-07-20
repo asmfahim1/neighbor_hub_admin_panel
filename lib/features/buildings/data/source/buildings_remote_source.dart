@@ -1,27 +1,100 @@
-import '../../../../core/api_client/api_service.dart';
-import '../../../../core/session_manager/session_manager.dart';
-import '../../../../core/utils/endpoints.dart';
 import 'package:injectable/injectable.dart';
 
-import '../model/buildings_model.dart';
+import '../../../../core/constants/apartment_status.dart';
+import '../../../../core/firebase/firestore_collections.dart';
+import '../../../../core/firebase/firestore_service.dart';
+import '../../domain/entity/buildings_entity.dart';
 
-@lazySingleton
+/// The swappable "endpoint" boundary for the Buildings feature. A future
+/// custom backend adds `BuildingsApiSource implements BuildingsRemoteSource`
+/// and flips the DI binding — nothing in `domain/` or `data/repository` changes.
+abstract class BuildingsRemoteSource {
+  Stream<BuildingEntity?> watchBuilding(String buildingId);
+  Future<BuildingEntity?> fetchBuilding(String buildingId);
+  Future<void> saveBuilding(BuildingEntity building);
 
-class BuildingsRemoteSource {
-  BuildingsRemoteSource(this._api, this._session);
+  /// Returns the number of apartments actually created (after dedupe).
+  Future<int> generateApartments({
+    required String buildingId,
+    required int totalFloors,
+    required int apartmentsPerFloor,
+  });
+}
 
-  final ApiService _api;
-  final SessionManager _session;
+@LazySingleton(as: BuildingsRemoteSource)
+class BuildingsFirestoreSource implements BuildingsRemoteSource {
+  BuildingsFirestoreSource(this._firestore);
 
-  Future<List<BuildingsModel>> fetchData() async {
-    final token = await _session.getToken();
-    final response = await _api.get(ApiEndpoints.buildingsList, query: {
-      'token': token ?? '',
+  final FirestoreService _firestore;
+
+  @override
+  Stream<BuildingEntity?> watchBuilding(String buildingId) {
+    return _firestore.watchDocument(FirestorePaths.building(buildingId)).map((snapshot) {
+      final data = snapshot.data();
+      if (!snapshot.exists || data == null) return null;
+      return BuildingEntity.fromJson(data, id: buildingId);
+    });
+  }
+
+  @override
+  Future<BuildingEntity?> fetchBuilding(String buildingId) async {
+    final snapshot = await _firestore.getDocument(FirestorePaths.building(buildingId));
+    final data = snapshot.data();
+    if (!snapshot.exists || data == null) return null;
+    return BuildingEntity.fromJson(data, id: buildingId);
+  }
+
+  @override
+  Future<void> saveBuilding(BuildingEntity building) async {
+    await _firestore.setDocument(
+      FirestorePaths.building(building.id),
+      building.toJson(),
+      merge: true,
+    );
+  }
+
+  @override
+  Future<int> generateApartments({
+    required String buildingId,
+    required int totalFloors,
+    required int apartmentsPerFloor,
+  }) async {
+    // Dedupe check (§7.3): never regenerate an apartment that already exists
+    // for a floor/number combination.
+    final existingSnapshot = await _firestore.getQuery(
+      _firestore.buildingScoped(FirestoreCollections.apartments, buildingId),
+    );
+    final existingNumbers = existingSnapshot.docs
+        .map((doc) => doc.data()['number']?.toString())
+        .whereType<String>()
+        .toSet();
+
+    final numbersToCreate = <String>[];
+    for (var floor = 1; floor <= totalFloors; floor++) {
+      for (var unit = 1; unit <= apartmentsPerFloor; unit++) {
+        final number = '$floor-${unit.toString().padLeft(2, '0')}';
+        if (!existingNumbers.contains(number)) {
+          numbersToCreate.add(number);
+        }
+      }
+    }
+
+    if (numbersToCreate.isEmpty) return 0;
+
+    await _firestore.writeInChunks<String>(numbersToCreate, (batch, number) {
+      final floor = int.parse(number.split('-').first);
+      final ref = _firestore.collection(FirestoreCollections.apartments).doc();
+      batch.set(ref, {
+        'buildingId': buildingId,
+        'number': number,
+        'floor': floor,
+        'description': null,
+        'status': ApartmentStatus.vacant.value,
+        'primaryResidentUid': null,
+        'updatedAt': _firestore.serverTimestamp,
+      });
     });
 
-    final data = (response.data as List<dynamic>? ?? []);
-    return data
-        .map((item) => BuildingsModel.fromJson(item as Map<String, dynamic>))
-        .toList();
+    return numbersToCreate.length;
   }
 }

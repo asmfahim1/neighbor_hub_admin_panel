@@ -1,16 +1,3 @@
-import 'package:flutter/material.dart';
-import '../../domain/entity/auth_entity.dart';
-
-class AuthCard extends StatelessWidget {
-  const AuthCard({super.key, required this.entity});
-
-  final AuthEntity entity;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(entity.title),
-      subtitle: Text(entity.id),
-    );
-  }
-}
+// Placeholder removed: the old generic list-of-entities UI no longer applies
+// now that `AuthState` models a single signed-in session rather than a list
+// (see `auth_plan.md` for the real UI task list, still pending design).

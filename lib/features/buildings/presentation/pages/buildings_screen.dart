@@ -4,8 +4,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/localization/app_strings.dart';
 import '../bloc/buildings_bloc.dart';
 import '../bloc/buildings_state.dart';
-import '../widgets/buildings_card.dart';
 
+/// Placeholder only — real UI/UX is a separate pass once the design is
+/// ready (`buildings_plan.md`). This just proves the [BuildingsBloc] wiring
+/// compiles and renders something for each [BuildingsStatus].
 class BuildingsScreen extends StatelessWidget {
   const BuildingsScreen({super.key});
 
@@ -16,18 +18,20 @@ class BuildingsScreen extends StatelessWidget {
       body: BlocBuilder<BuildingsBloc, BuildingsState>(
         builder: (context, state) {
           switch (state.status) {
-            case BuildingsStatus.loading:
-              return const Center(child: CircularProgressIndicator());
-            case BuildingsStatus.failure:
-              return Center(child: Text(state.message ?? 'Error'));
-            case BuildingsStatus.success:
-              return ListView.builder(
-                itemCount: state.items.length,
-                itemBuilder: (_, index) =>
-                    BuildingsCard(entity: state.items[index]),
-              );
             case BuildingsStatus.initial:
               return const SizedBox.shrink();
+            case BuildingsStatus.loading:
+            case BuildingsStatus.saving:
+            case BuildingsStatus.generating:
+              return const Center(child: CircularProgressIndicator());
+            case BuildingsStatus.failure:
+              return Center(child: Text(state.message ?? 'Something went wrong.'));
+            case BuildingsStatus.loaded:
+              final building = state.building;
+              if (building == null) {
+                return const Center(child: Text('Set up your building'));
+              }
+              return Center(child: Text(building.name));
           }
         },
       ),
