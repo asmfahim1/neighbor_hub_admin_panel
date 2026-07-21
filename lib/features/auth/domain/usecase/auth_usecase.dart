@@ -38,6 +38,60 @@ class SignInWithAppleUseCase {
 }
 
 @injectable
+class SignUpAsAdminUseCase {
+  SignUpAsAdminUseCase(this._repo);
+  final AuthRepository _repo;
+
+  Future<Result<AuthSessionEntity>> call({
+    required String buildingName,
+    required String buildingAddress,
+    required String displayName,
+    required String email,
+    required String password,
+  }) {
+    return _repo.signUpAsAdmin(
+      buildingName: buildingName,
+      buildingAddress: buildingAddress,
+      displayName: displayName,
+      email: email,
+      password: password,
+    );
+  }
+}
+
+@injectable
+class SignUpAsAdminWithGoogleUseCase {
+  SignUpAsAdminWithGoogleUseCase(this._repo);
+  final AuthRepository _repo;
+
+  Future<Result<AuthSessionEntity>> call({
+    required String buildingName,
+    required String buildingAddress,
+  }) {
+    return _repo.signUpAsAdminWithGoogle(
+      buildingName: buildingName,
+      buildingAddress: buildingAddress,
+    );
+  }
+}
+
+@injectable
+class SignUpAsAdminWithAppleUseCase {
+  SignUpAsAdminWithAppleUseCase(this._repo);
+  final AuthRepository _repo;
+
+  Future<Result<AuthSessionEntity>> call({
+    required String buildingName,
+    required String buildingAddress,
+  }) {
+    return _repo.signUpAsAdminWithApple(
+      buildingName: buildingName,
+      buildingAddress: buildingAddress,
+    );
+  }
+}
+
+@injectable
 class SendPasswordResetEmailUseCase {
   SendPasswordResetEmailUseCase(this._repo);
   final AuthRepository _repo;

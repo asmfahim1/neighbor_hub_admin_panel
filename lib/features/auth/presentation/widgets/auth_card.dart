@@ -1,3 +1,3 @@
-// Placeholder removed: the old generic list-of-entities UI no longer applies
-// now that `AuthState` models a single signed-in session rather than a list
-// (see `auth_plan.md` for the real UI task list, still pending design).
+// Unused: superseded by the real UI widgets in this folder
+// (auth_brand_panel.dart, auth_error_banner.dart, sign_in_form.dart,
+// social_sign_in_buttons.dart) — see auth_plan.md's UI Design Plan.

@@ -16,6 +16,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     this._signInWithEmail,
     this._signInWithGoogle,
     this._signInWithApple,
+    this._signUpAsAdmin,
+    this._signUpAsAdminWithGoogle,
+    this._signUpAsAdminWithApple,
     this._sendPasswordResetEmail,
     this._signOut,
   ) : super(const AuthState()) {
@@ -24,6 +27,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignInWithEmailRequested>(_onSignInWithEmail);
     on<SignInWithGoogleRequested>(_onSignInWithGoogle);
     on<SignInWithAppleRequested>(_onSignInWithApple);
+    on<SignUpAsAdminRequested>(_onSignUpAsAdmin);
+    on<SignUpWithGoogleRequested>(_onSignUpWithGoogle);
+    on<SignUpWithAppleRequested>(_onSignUpWithApple);
     on<PasswordResetRequested>(_onPasswordReset);
     on<SignOutRequested>(_onSignOut);
 
@@ -34,6 +40,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final SignInWithEmailUseCase _signInWithEmail;
   final SignInWithGoogleUseCase _signInWithGoogle;
   final SignInWithAppleUseCase _signInWithApple;
+  final SignUpAsAdminUseCase _signUpAsAdmin;
+  final SignUpAsAdminWithGoogleUseCase _signUpAsAdminWithGoogle;
+  final SignUpAsAdminWithAppleUseCase _signUpAsAdminWithApple;
   final SendPasswordResetEmailUseCase _sendPasswordResetEmail;
   final SignOutUseCase _signOut;
 
@@ -78,6 +87,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(state.copyWith(status: AuthStatus.authenticating, clearMessage: true));
     final result = await _signInWithApple();
+    _emitSignInResult(result, emit);
+  }
+
+  Future<void> _onSignUpAsAdmin(
+    SignUpAsAdminRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.authenticating, clearMessage: true));
+    final result = await _signUpAsAdmin(
+      buildingName: event.buildingName,
+      buildingAddress: event.buildingAddress,
+      displayName: event.displayName,
+      email: event.email,
+      password: event.password,
+    );
+    _emitSignInResult(result, emit);
+  }
+
+  Future<void> _onSignUpWithGoogle(
+    SignUpWithGoogleRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.authenticating, clearMessage: true));
+    final result = await _signUpAsAdminWithGoogle(
+      buildingName: event.buildingName,
+      buildingAddress: event.buildingAddress,
+    );
+    _emitSignInResult(result, emit);
+  }
+
+  Future<void> _onSignUpWithApple(
+    SignUpWithAppleRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.authenticating, clearMessage: true));
+    final result = await _signUpAsAdminWithApple(
+      buildingName: event.buildingName,
+      buildingAddress: event.buildingAddress,
+    );
     _emitSignInResult(result, emit);
   }
 

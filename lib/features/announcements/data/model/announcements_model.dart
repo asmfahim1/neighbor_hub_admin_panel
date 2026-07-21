@@ -1,3 +1,6 @@
-// No feature-local model: `AnnouncementEntity` (from `core/models/`) is used
-// directly end-to-end. See `lib/core/models/README.md`.
-export '../../domain/entity/announcements_entity.dart';
+// Data-layer re-export: `AnnouncementModel` (from `core/models/`) is the
+// parsing DTO for this feature's `data/source/announcements_remote_source.dart`.
+// The domain layer never imports this file — only
+// `domain/entity/announcements_entity.dart`'s plain entity. See
+// `lib/core/models/README.md`.
+export '../../../../core/models/announcement_model.dart';

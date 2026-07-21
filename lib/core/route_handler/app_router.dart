@@ -4,6 +4,8 @@ import '../../features/settings/presentation/settings_screen.dart';
 import 'app_routes.dart';
 // arcle:feature_imports
 import '../../features/auth/presentation/pages/auth_screen.dart';
+import '../../features/auth/presentation/pages/sign_up_screen.dart';
+import '../../features/auth/presentation/pages/splash_screen.dart';
 import '../../features/profile/presentation/pages/profile_screen.dart';
 import '../../features/notifications/presentation/pages/notifications_screen.dart';
 import '../../features/chat/presentation/pages/chat_screen.dart';
@@ -21,6 +23,8 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.settings:
         return MaterialPageRoute(builder: (_) => const SettingsScreen());
+      case AppRoutes.splash:
+        return MaterialPageRoute(builder: (_) => const SplashScreen());
             case AppRoutes.dashboard:
         return MaterialPageRoute(builder: (_) => const DashboardScreen());
             case AppRoutes.buildings:
@@ -45,6 +49,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ProfileScreen());
             case AppRoutes.auth:
         return MaterialPageRoute(builder: (_) => const AuthScreen());
+            case AppRoutes.signUp:
+        return MaterialPageRoute(builder: (_) => const SignUpScreen());
       // arcle:feature_cases
       default:
         return MaterialPageRoute(

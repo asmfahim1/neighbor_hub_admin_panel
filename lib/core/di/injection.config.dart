@@ -46,6 +46,8 @@ import 'package:neighbor_hub_admin_panel/features/analytics/domain/repository/an
     as _i901;
 import 'package:neighbor_hub_admin_panel/features/analytics/domain/usecase/analytics_usecase.dart'
     as _i131;
+import 'package:neighbor_hub_admin_panel/features/analytics/presentation/bloc/analytics_bloc.dart'
+    as _i574;
 import 'package:neighbor_hub_admin_panel/features/announcements/data/repository/announcements_repository_impl.dart'
     as _i43;
 import 'package:neighbor_hub_admin_panel/features/announcements/data/source/announcements_remote_source.dart'
@@ -54,6 +56,8 @@ import 'package:neighbor_hub_admin_panel/features/announcements/domain/repositor
     as _i929;
 import 'package:neighbor_hub_admin_panel/features/announcements/domain/usecase/announcements_usecase.dart'
     as _i32;
+import 'package:neighbor_hub_admin_panel/features/announcements/presentation/bloc/announcements_bloc.dart'
+    as _i711;
 import 'package:neighbor_hub_admin_panel/features/apartments/data/repository/apartments_repository_impl.dart'
     as _i480;
 import 'package:neighbor_hub_admin_panel/features/apartments/data/source/apartments_remote_source.dart'
@@ -92,6 +96,8 @@ import 'package:neighbor_hub_admin_panel/features/chat/domain/repository/chat_re
     as _i1067;
 import 'package:neighbor_hub_admin_panel/features/chat/domain/usecase/chat_usecase.dart'
     as _i579;
+import 'package:neighbor_hub_admin_panel/features/chat/presentation/bloc/chat_bloc.dart'
+    as _i877;
 import 'package:neighbor_hub_admin_panel/features/dashboard/data/repository/dashboard_repository_impl.dart'
     as _i453;
 import 'package:neighbor_hub_admin_panel/features/dashboard/data/source/dashboard_remote_source.dart'
@@ -110,6 +116,8 @@ import 'package:neighbor_hub_admin_panel/features/moderation/domain/repository/m
     as _i555;
 import 'package:neighbor_hub_admin_panel/features/moderation/domain/usecase/moderation_usecase.dart'
     as _i392;
+import 'package:neighbor_hub_admin_panel/features/moderation/presentation/bloc/moderation_bloc.dart'
+    as _i342;
 import 'package:neighbor_hub_admin_panel/features/notifications/data/repository/notifications_repository_impl.dart'
     as _i80;
 import 'package:neighbor_hub_admin_panel/features/notifications/data/source/notifications_remote_source.dart'
@@ -118,6 +126,8 @@ import 'package:neighbor_hub_admin_panel/features/notifications/domain/repositor
     as _i507;
 import 'package:neighbor_hub_admin_panel/features/notifications/domain/usecase/notifications_usecase.dart'
     as _i456;
+import 'package:neighbor_hub_admin_panel/features/notifications/presentation/bloc/notifications_bloc.dart'
+    as _i123;
 import 'package:neighbor_hub_admin_panel/features/polls/data/repository/polls_repository_impl.dart'
     as _i469;
 import 'package:neighbor_hub_admin_panel/features/polls/data/source/polls_remote_source.dart'
@@ -126,6 +136,8 @@ import 'package:neighbor_hub_admin_panel/features/polls/domain/repository/polls_
     as _i886;
 import 'package:neighbor_hub_admin_panel/features/polls/domain/usecase/polls_usecase.dart'
     as _i889;
+import 'package:neighbor_hub_admin_panel/features/polls/presentation/bloc/polls_bloc.dart'
+    as _i943;
 import 'package:neighbor_hub_admin_panel/features/profile/data/repository/profile_repository_impl.dart'
     as _i50;
 import 'package:neighbor_hub_admin_panel/features/profile/data/source/profile_remote_source.dart'
@@ -134,6 +146,8 @@ import 'package:neighbor_hub_admin_panel/features/profile/domain/repository/prof
     as _i1034;
 import 'package:neighbor_hub_admin_panel/features/profile/domain/usecase/profile_usecase.dart'
     as _i350;
+import 'package:neighbor_hub_admin_panel/features/profile/presentation/bloc/profile_bloc.dart'
+    as _i44;
 import 'package:neighbor_hub_admin_panel/features/residents/data/repository/residents_repository_impl.dart'
     as _i582;
 import 'package:neighbor_hub_admin_panel/features/residents/data/source/residents_remote_source.dart'
@@ -142,6 +156,8 @@ import 'package:neighbor_hub_admin_panel/features/residents/domain/repository/re
     as _i627;
 import 'package:neighbor_hub_admin_panel/features/residents/domain/usecase/residents_usecase.dart'
     as _i12;
+import 'package:neighbor_hub_admin_panel/features/residents/presentation/bloc/residents_bloc.dart'
+    as _i137;
 import 'package:shared_preferences/shared_preferences.dart' as _i460;
 
 extension GetItInjectableX on _i174.GetIt {
@@ -195,14 +211,57 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i730.ApartmentsRemoteSource>(
       () => _i730.ApartmentsFirestoreSource(gh<_i998.FirestoreService>()),
     );
+    gh.lazySingleton<_i660.ModerationRemoteSource>(
+      () => _i660.ModerationFirestoreSource(gh<_i998.FirestoreService>()),
+    );
     gh.lazySingleton<_i654.BuildingsRemoteSource>(
       () => _i654.BuildingsFirestoreSource(gh<_i998.FirestoreService>()),
     );
     gh.factory<_i455.SessionManager>(
       () => _i455.SessionManager(gh<_i535.PrefManager>()),
     );
+    gh.lazySingleton<_i68.AnnouncementsRemoteSource>(
+      () => _i68.AnnouncementsFirestoreSource(gh<_i998.FirestoreService>()),
+    );
+    gh.lazySingleton<_i485.NotificationsRemoteSource>(
+      () => _i485.NotificationsFirestoreSource(
+        gh<_i998.FirestoreService>(),
+        gh<_i723.NotificationService>(),
+      ),
+    );
+    gh.lazySingleton<_i798.ResidentsRemoteSource>(
+      () => _i798.ResidentsFirestoreSource(gh<_i998.FirestoreService>()),
+    );
+    gh.lazySingleton<_i310.ChatRemoteSource>(
+      () => _i310.ChatFirestoreSource(gh<_i998.FirestoreService>()),
+    );
     gh.lazySingleton<_i829.DashboardRemoteSource>(
       () => _i829.DashboardFirestoreSource(gh<_i998.FirestoreService>()),
+    );
+    gh.lazySingleton<_i738.ProfileRemoteSource>(
+      () => _i738.ProfileFirestoreSource(
+        gh<_i998.FirestoreService>(),
+        gh<_i243.FirebaseAuthService>(),
+      ),
+    );
+    gh.lazySingleton<_i428.PollsRemoteSource>(
+      () => _i428.PollsFirestoreSource(gh<_i998.FirestoreService>()),
+    );
+    gh.lazySingleton<_i965.AnalyticsRemoteSource>(
+      () => _i965.AnalyticsFirestoreSource(gh<_i998.FirestoreService>()),
+    );
+    gh.lazySingleton<_i929.AnnouncementsRepository>(
+      () => _i43.AnnouncementsRepositoryImpl(
+        gh<_i68.AnnouncementsRemoteSource>(),
+      ),
+    );
+    gh.lazySingleton<_i901.AnalyticsRepository>(
+      () => _i441.AnalyticsRepositoryImpl(gh<_i965.AnalyticsRemoteSource>()),
+    );
+    gh.lazySingleton<_i507.NotificationsRepository>(
+      () => _i80.NotificationsRepositoryImpl(
+        gh<_i485.NotificationsRemoteSource>(),
+      ),
     );
     gh.lazySingleton<_i277.AuthRepository>(
       () => _i936.AuthRepositoryImpl(
@@ -210,14 +269,150 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i827.CurrentSession>(),
       ),
     );
+    gh.factory<_i131.WatchAnalyticsApartmentsUseCase>(
+      () => _i131.WatchAnalyticsApartmentsUseCase(
+        gh<_i901.AnalyticsRepository>(),
+      ),
+    );
+    gh.factory<_i131.WatchAnalyticsPostsUseCase>(
+      () => _i131.WatchAnalyticsPostsUseCase(gh<_i901.AnalyticsRepository>()),
+    );
+    gh.factory<_i131.WatchAnalyticsPollsUseCase>(
+      () => _i131.WatchAnalyticsPollsUseCase(gh<_i901.AnalyticsRepository>()),
+    );
+    gh.lazySingleton<_i627.ResidentsRepository>(
+      () => _i582.ResidentsRepositoryImpl(gh<_i798.ResidentsRemoteSource>()),
+    );
     gh.lazySingleton<_i1037.DioClient>(
       () => _i1037.DioClient(gh<_i455.SessionManager>()),
+    );
+    gh.factory<_i32.WatchAnnouncementsUseCase>(
+      () => _i32.WatchAnnouncementsUseCase(gh<_i929.AnnouncementsRepository>()),
+    );
+    gh.factory<_i32.CreateAnnouncementUseCase>(
+      () => _i32.CreateAnnouncementUseCase(gh<_i929.AnnouncementsRepository>()),
+    );
+    gh.factory<_i32.UpdateAnnouncementUseCase>(
+      () => _i32.UpdateAnnouncementUseCase(gh<_i929.AnnouncementsRepository>()),
+    );
+    gh.factory<_i32.DeleteAnnouncementUseCase>(
+      () => _i32.DeleteAnnouncementUseCase(gh<_i929.AnnouncementsRepository>()),
+    );
+    gh.lazySingleton<_i1067.ChatRepository>(
+      () => _i620.ChatRepositoryImpl(gh<_i310.ChatRemoteSource>()),
     );
     gh.lazySingleton<_i795.ApartmentsRepository>(
       () => _i480.ApartmentsRepositoryImpl(gh<_i730.ApartmentsRemoteSource>()),
     );
+    gh.factory<_i574.AnalyticsBloc>(
+      () => _i574.AnalyticsBloc(
+        gh<_i131.WatchAnalyticsApartmentsUseCase>(),
+        gh<_i131.WatchAnalyticsPostsUseCase>(),
+        gh<_i131.WatchAnalyticsPollsUseCase>(),
+      ),
+    );
+    gh.factory<_i711.AnnouncementsBloc>(
+      () => _i711.AnnouncementsBloc(
+        gh<_i32.WatchAnnouncementsUseCase>(),
+        gh<_i32.CreateAnnouncementUseCase>(),
+        gh<_i32.UpdateAnnouncementUseCase>(),
+        gh<_i32.DeleteAnnouncementUseCase>(),
+      ),
+    );
+    gh.factory<_i12.WatchPendingRequestsUseCase>(
+      () => _i12.WatchPendingRequestsUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.factory<_i12.ApproveRequestUseCase>(
+      () => _i12.ApproveRequestUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.factory<_i12.RejectRequestUseCase>(
+      () => _i12.RejectRequestUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.factory<_i12.WatchResidentDirectoryUseCase>(
+      () => _i12.WatchResidentDirectoryUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.factory<_i12.GetResidentUseCase>(
+      () => _i12.GetResidentUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.factory<_i12.GetResidentActivitySummaryUseCase>(
+      () => _i12.GetResidentActivitySummaryUseCase(
+        gh<_i627.ResidentsRepository>(),
+      ),
+    );
+    gh.factory<_i12.RemoveResidentUseCase>(
+      () => _i12.RemoveResidentUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.factory<_i12.TransferAdminRoleUseCase>(
+      () => _i12.TransferAdminRoleUseCase(gh<_i627.ResidentsRepository>()),
+    );
+    gh.lazySingleton<_i886.PollsRepository>(
+      () => _i469.PollsRepositoryImpl(gh<_i428.PollsRemoteSource>()),
+    );
+    gh.lazySingleton<_i1034.ProfileRepository>(
+      () => _i50.ProfileRepositoryImpl(
+        gh<_i738.ProfileRemoteSource>(),
+        gh<_i827.CurrentSession>(),
+      ),
+    );
+    gh.lazySingleton<_i555.ModerationRepository>(
+      () => _i657.ModerationRepositoryImpl(gh<_i660.ModerationRemoteSource>()),
+    );
+    gh.factory<_i889.WatchPollsUseCase>(
+      () => _i889.WatchPollsUseCase(gh<_i886.PollsRepository>()),
+    );
+    gh.factory<_i889.WatchPollVotesUseCase>(
+      () => _i889.WatchPollVotesUseCase(gh<_i886.PollsRepository>()),
+    );
+    gh.factory<_i889.CreatePollUseCase>(
+      () => _i889.CreatePollUseCase(gh<_i886.PollsRepository>()),
+    );
+    gh.factory<_i889.ClosePollUseCase>(
+      () => _i889.ClosePollUseCase(gh<_i886.PollsRepository>()),
+    );
+    gh.factory<_i456.WatchNotificationsInboxUseCase>(
+      () => _i456.WatchNotificationsInboxUseCase(
+        gh<_i507.NotificationsRepository>(),
+      ),
+    );
+    gh.factory<_i456.MarkNotificationAsReadUseCase>(
+      () => _i456.MarkNotificationAsReadUseCase(
+        gh<_i507.NotificationsRepository>(),
+      ),
+    );
+    gh.factory<_i392.WatchModerationFeedUseCase>(
+      () => _i392.WatchModerationFeedUseCase(gh<_i555.ModerationRepository>()),
+    );
+    gh.factory<_i392.WatchPostCommentsUseCase>(
+      () => _i392.WatchPostCommentsUseCase(gh<_i555.ModerationRepository>()),
+    );
+    gh.factory<_i392.ResolveRealAuthorUseCase>(
+      () => _i392.ResolveRealAuthorUseCase(gh<_i555.ModerationRepository>()),
+    );
+    gh.factory<_i392.DeletePostUseCase>(
+      () => _i392.DeletePostUseCase(gh<_i555.ModerationRepository>()),
+    );
+    gh.factory<_i392.DeleteCommentUseCase>(
+      () => _i392.DeleteCommentUseCase(gh<_i555.ModerationRepository>()),
+    );
+    gh.factory<_i392.SetPostLockedUseCase>(
+      () => _i392.SetPostLockedUseCase(gh<_i555.ModerationRepository>()),
+    );
+    gh.factory<_i392.SetPostPinnedUseCase>(
+      () => _i392.SetPostPinnedUseCase(gh<_i555.ModerationRepository>()),
+    );
     gh.lazySingleton<_i114.BuildingsRepository>(
       () => _i317.BuildingsRepositoryImpl(gh<_i654.BuildingsRemoteSource>()),
+    );
+    gh.factory<_i342.ModerationBloc>(
+      () => _i342.ModerationBloc(
+        gh<_i392.WatchModerationFeedUseCase>(),
+        gh<_i392.WatchPostCommentsUseCase>(),
+        gh<_i392.ResolveRealAuthorUseCase>(),
+        gh<_i392.DeletePostUseCase>(),
+        gh<_i392.DeleteCommentUseCase>(),
+        gh<_i392.SetPostLockedUseCase>(),
+        gh<_i392.SetPostPinnedUseCase>(),
+      ),
     );
     gh.factory<_i123.WatchAuthStateUseCase>(
       () => _i123.WatchAuthStateUseCase(gh<_i277.AuthRepository>()),
@@ -231,6 +426,15 @@ extension GetItInjectableX on _i174.GetIt {
     gh.factory<_i123.SignInWithAppleUseCase>(
       () => _i123.SignInWithAppleUseCase(gh<_i277.AuthRepository>()),
     );
+    gh.factory<_i123.SignUpAsAdminUseCase>(
+      () => _i123.SignUpAsAdminUseCase(gh<_i277.AuthRepository>()),
+    );
+    gh.factory<_i123.SignUpAsAdminWithGoogleUseCase>(
+      () => _i123.SignUpAsAdminWithGoogleUseCase(gh<_i277.AuthRepository>()),
+    );
+    gh.factory<_i123.SignUpAsAdminWithAppleUseCase>(
+      () => _i123.SignUpAsAdminWithAppleUseCase(gh<_i277.AuthRepository>()),
+    );
     gh.factory<_i123.SendPasswordResetEmailUseCase>(
       () => _i123.SendPasswordResetEmailUseCase(gh<_i277.AuthRepository>()),
     );
@@ -240,64 +444,47 @@ extension GetItInjectableX on _i174.GetIt {
     gh.lazySingleton<_i613.DashboardRepository>(
       () => _i453.DashboardRepositoryImpl(gh<_i829.DashboardRemoteSource>()),
     );
+    gh.factory<_i579.WatchConversationsUseCase>(
+      () => _i579.WatchConversationsUseCase(gh<_i1067.ChatRepository>()),
+    );
+    gh.factory<_i579.WatchMessagesUseCase>(
+      () => _i579.WatchMessagesUseCase(gh<_i1067.ChatRepository>()),
+    );
+    gh.factory<_i579.StartOrResumeConversationUseCase>(
+      () => _i579.StartOrResumeConversationUseCase(gh<_i1067.ChatRepository>()),
+    );
+    gh.factory<_i579.SendMessageUseCase>(
+      () => _i579.SendMessageUseCase(gh<_i1067.ChatRepository>()),
+    );
+    gh.factory<_i123.NotificationsBloc>(
+      () => _i123.NotificationsBloc(
+        gh<_i456.WatchNotificationsInboxUseCase>(),
+        gh<_i456.MarkNotificationAsReadUseCase>(),
+      ),
+    );
     gh.lazySingleton<_i811.ApiService>(
       () => _i811.ApiService(gh<_i1037.DioClient>()),
     );
-    gh.lazySingleton<_i965.AnalyticsRemoteSource>(
-      () => _i965.AnalyticsRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
+    gh.factory<_i592.AuthBloc>(
+      () => _i592.AuthBloc(
+        gh<_i123.WatchAuthStateUseCase>(),
+        gh<_i123.SignInWithEmailUseCase>(),
+        gh<_i123.SignInWithGoogleUseCase>(),
+        gh<_i123.SignInWithAppleUseCase>(),
+        gh<_i123.SignUpAsAdminUseCase>(),
+        gh<_i123.SignUpAsAdminWithGoogleUseCase>(),
+        gh<_i123.SignUpAsAdminWithAppleUseCase>(),
+        gh<_i123.SendPasswordResetEmailUseCase>(),
+        gh<_i123.SignOutUseCase>(),
       ),
     );
-    gh.lazySingleton<_i68.AnnouncementsRemoteSource>(
-      () => _i68.AnnouncementsRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
+    gh.factory<_i877.ChatBloc>(
+      () => _i877.ChatBloc(
+        gh<_i579.WatchConversationsUseCase>(),
+        gh<_i579.WatchMessagesUseCase>(),
+        gh<_i579.StartOrResumeConversationUseCase>(),
+        gh<_i579.SendMessageUseCase>(),
       ),
-    );
-    gh.lazySingleton<_i310.ChatRemoteSource>(
-      () => _i310.ChatRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
-      ),
-    );
-    gh.lazySingleton<_i660.ModerationRemoteSource>(
-      () => _i660.ModerationRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
-      ),
-    );
-    gh.lazySingleton<_i485.NotificationsRemoteSource>(
-      () => _i485.NotificationsRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
-      ),
-    );
-    gh.lazySingleton<_i428.PollsRemoteSource>(
-      () => _i428.PollsRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
-      ),
-    );
-    gh.lazySingleton<_i738.ProfileRemoteSource>(
-      () => _i738.ProfileRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
-      ),
-    );
-    gh.lazySingleton<_i798.ResidentsRemoteSource>(
-      () => _i798.ResidentsRemoteSource(
-        gh<_i811.ApiService>(),
-        gh<_i455.SessionManager>(),
-      ),
-    );
-    gh.lazySingleton<_i929.AnnouncementsRepository>(
-      () => _i43.AnnouncementsRepositoryImpl(
-        gh<_i68.AnnouncementsRemoteSource>(),
-      ),
-    );
-    gh.lazySingleton<_i901.AnalyticsRepository>(
-      () => _i441.AnalyticsRepositoryImpl(gh<_i965.AnalyticsRemoteSource>()),
     );
     gh.factory<_i293.WatchApartmentsUseCase>(
       () => _i293.WatchApartmentsUseCase(gh<_i795.ApartmentsRepository>()),
@@ -318,41 +505,35 @@ extension GetItInjectableX on _i174.GetIt {
       () =>
           _i293.ResolvePrimaryResidentUseCase(gh<_i795.ApartmentsRepository>()),
     );
-    gh.lazySingleton<_i507.NotificationsRepository>(
-      () => _i80.NotificationsRepositoryImpl(
-        gh<_i485.NotificationsRemoteSource>(),
+    gh.factory<_i350.WatchOwnProfileUseCase>(
+      () => _i350.WatchOwnProfileUseCase(gh<_i1034.ProfileRepository>()),
+    );
+    gh.factory<_i350.UpdateOwnProfileUseCase>(
+      () => _i350.UpdateOwnProfileUseCase(gh<_i1034.ProfileRepository>()),
+    );
+    gh.factory<_i350.ProfileSignOutUseCase>(
+      () => _i350.ProfileSignOutUseCase(gh<_i1034.ProfileRepository>()),
+    );
+    gh.factory<_i137.ResidentsBloc>(
+      () => _i137.ResidentsBloc(
+        gh<_i12.WatchPendingRequestsUseCase>(),
+        gh<_i12.ApproveRequestUseCase>(),
+        gh<_i12.RejectRequestUseCase>(),
+        gh<_i12.WatchResidentDirectoryUseCase>(),
+        gh<_i12.GetResidentUseCase>(),
+        gh<_i12.GetResidentActivitySummaryUseCase>(),
+        gh<_i12.RemoveResidentUseCase>(),
+        gh<_i12.TransferAdminRoleUseCase>(),
       ),
     );
-    gh.factory<_i131.AnalyticsUseCase>(
-      () => _i131.AnalyticsUseCase(gh<_i901.AnalyticsRepository>()),
-    );
-    gh.lazySingleton<_i627.ResidentsRepository>(
-      () => _i582.ResidentsRepositoryImpl(gh<_i798.ResidentsRemoteSource>()),
-    );
-    gh.factory<_i592.AuthBloc>(
-      () => _i592.AuthBloc(
-        gh<_i123.WatchAuthStateUseCase>(),
-        gh<_i123.SignInWithEmailUseCase>(),
-        gh<_i123.SignInWithGoogleUseCase>(),
-        gh<_i123.SignInWithAppleUseCase>(),
-        gh<_i123.SendPasswordResetEmailUseCase>(),
-        gh<_i123.SignOutUseCase>(),
+    gh.factory<_i943.PollsBloc>(
+      () => _i943.PollsBloc(
+        gh<_i889.WatchPollsUseCase>(),
+        gh<_i889.WatchPollVotesUseCase>(),
+        gh<_i889.CreatePollUseCase>(),
+        gh<_i889.ClosePollUseCase>(),
+        gh<_i827.CurrentSession>(),
       ),
-    );
-    gh.factory<_i32.AnnouncementsUseCase>(
-      () => _i32.AnnouncementsUseCase(gh<_i929.AnnouncementsRepository>()),
-    );
-    gh.lazySingleton<_i1067.ChatRepository>(
-      () => _i620.ChatRepositoryImpl(gh<_i310.ChatRemoteSource>()),
-    );
-    gh.factory<_i12.ResidentsUseCase>(
-      () => _i12.ResidentsUseCase(gh<_i627.ResidentsRepository>()),
-    );
-    gh.lazySingleton<_i886.PollsRepository>(
-      () => _i469.PollsRepositoryImpl(gh<_i428.PollsRemoteSource>()),
-    );
-    gh.lazySingleton<_i555.ModerationRepository>(
-      () => _i657.ModerationRepositoryImpl(gh<_i660.ModerationRemoteSource>()),
     );
     gh.factory<_i862.WatchDashboardApartmentsUseCase>(
       () => _i862.WatchDashboardApartmentsUseCase(
@@ -374,9 +555,6 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i613.DashboardRepository>(),
       ),
     );
-    gh.factory<_i889.PollsUseCase>(
-      () => _i889.PollsUseCase(gh<_i886.PollsRepository>()),
-    );
     gh.factory<_i257.WatchBuildingUseCase>(
       () => _i257.WatchBuildingUseCase(gh<_i114.BuildingsRepository>()),
     );
@@ -385,15 +563,6 @@ extension GetItInjectableX on _i174.GetIt {
     );
     gh.factory<_i257.GenerateApartmentsUseCase>(
       () => _i257.GenerateApartmentsUseCase(gh<_i114.BuildingsRepository>()),
-    );
-    gh.factory<_i456.NotificationsUseCase>(
-      () => _i456.NotificationsUseCase(gh<_i507.NotificationsRepository>()),
-    );
-    gh.factory<_i392.ModerationUseCase>(
-      () => _i392.ModerationUseCase(gh<_i555.ModerationRepository>()),
-    );
-    gh.lazySingleton<_i1034.ProfileRepository>(
-      () => _i50.ProfileRepositoryImpl(gh<_i738.ProfileRemoteSource>()),
     );
     gh.factory<_i264.DashboardBloc>(
       () => _i264.DashboardBloc(
@@ -412,11 +581,12 @@ extension GetItInjectableX on _i174.GetIt {
         gh<_i293.SetApartmentStatusUseCase>(),
       ),
     );
-    gh.factory<_i579.ChatUseCase>(
-      () => _i579.ChatUseCase(gh<_i1067.ChatRepository>()),
-    );
-    gh.factory<_i350.ProfileUseCase>(
-      () => _i350.ProfileUseCase(gh<_i1034.ProfileRepository>()),
+    gh.factory<_i44.ProfileBloc>(
+      () => _i44.ProfileBloc(
+        gh<_i350.WatchOwnProfileUseCase>(),
+        gh<_i350.UpdateOwnProfileUseCase>(),
+        gh<_i350.ProfileSignOutUseCase>(),
+      ),
     );
     gh.factory<_i521.BuildingsBloc>(
       () => _i521.BuildingsBloc(

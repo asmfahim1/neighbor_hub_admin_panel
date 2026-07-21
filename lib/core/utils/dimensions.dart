@@ -1,4 +1,5 @@
 import 'dart:ui' as ui;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/widgets.dart';
 
 /// Coarse device class used to pick which mockup (mobile vs. web) to scale
@@ -35,9 +36,19 @@ class Dimensions {
   static double get _screenHeight => _windowSize.height;
   static double get _screenWidth => _windowSize.width;
 
-  /// Current device class, derived from the live window/screen width.
+  /// Current device class. `web` requires *both* running as a literal
+  /// Flutter Web build (`kIsWeb`) *and* a wide-enough viewport — the "Admin
+  /// Web Portal" (persistent sidebar, split-pane layouts) is specifically
+  /// the browser experience (`admen_web_app_ui_functionality.md` §1), not
+  /// "any window that happens to be wide". A compiled app build (mobile,
+  /// or desktop — Windows/macOS/Linux) never returns `web` here, even at a
+  /// wide/maximized window size; it falls through to `tablet` density
+  /// instead (rail nav, larger cards — still the "Admin App" surface, per
+  /// §4.1's "adaptive nav... rail on tablet/landscape"). Without the
+  /// `kIsWeb` gate, a wide compiled desktop-app window would incorrectly
+  /// render the web-only split-pane layout.
   static DeviceType get deviceType {
-    if (_screenWidth >= webBreakpoint) return DeviceType.web;
+    if (kIsWeb && _screenWidth >= webBreakpoint) return DeviceType.web;
     if (_screenWidth >= tabletBreakpoint) return DeviceType.tablet;
     return DeviceType.mobile;
   }

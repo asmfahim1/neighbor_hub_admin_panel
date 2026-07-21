@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/data_models.dart';
 import '../../../../core/models/models.dart';
 
 /// The swappable "endpoint" boundary for the Analytics feature. A future
@@ -24,7 +25,7 @@ class AnalyticsFirestoreSource implements AnalyticsRemoteSource {
     final query = _firestore.buildingScoped(FirestoreCollections.apartments, buildingId);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => ApartmentEntity.fromJson(doc.data(), id: doc.id))
+              .map((doc) => ApartmentModel.fromJson(doc.data(), id: doc.id))
               .toList(),
         );
   }
@@ -42,7 +43,7 @@ class AnalyticsFirestoreSource implements AnalyticsRemoteSource {
         .limit(limit);
     return _firestore.watchQuery(query).map(
           (snapshot) =>
-              snapshot.docs.map((doc) => PostEntity.fromJson(doc.data(), id: doc.id)).toList(),
+              snapshot.docs.map((doc) => PostModel.fromJson(doc.data(), id: doc.id)).toList(),
         );
   }
 
@@ -51,7 +52,7 @@ class AnalyticsFirestoreSource implements AnalyticsRemoteSource {
     final query = _firestore.buildingScoped(FirestoreCollections.polls, buildingId);
     return _firestore.watchQuery(query).map(
           (snapshot) =>
-              snapshot.docs.map((doc) => PollEntity.fromJson(doc.data(), id: doc.id)).toList(),
+              snapshot.docs.map((doc) => PollModel.fromJson(doc.data(), id: doc.id)).toList(),
         );
   }
 }

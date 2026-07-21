@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/constants/notification_category.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/announcement_model.dart';
 import '../../domain/entity/announcements_entity.dart';
 
 /// The swappable "endpoint" boundary for the Announcements feature. A future
@@ -38,7 +39,7 @@ class AnnouncementsFirestoreSource implements AnnouncementsRemoteSource {
         .orderBy(FirestoreFields.createdAt, descending: true);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => AnnouncementEntity.fromJson(doc.data(), id: doc.id))
+              .map((doc) => AnnouncementModel.fromJson(doc.data(), id: doc.id))
               .toList(),
         );
   }

@@ -6,6 +6,7 @@ import '../../../../core/constants/notification_category.dart';
 import '../../../../core/constants/user_role.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/data_models.dart';
 import '../../../../core/models/models.dart';
 import '../../../../core/utils/logger.dart';
 import '../../domain/entity/residents_entity.dart';
@@ -47,7 +48,7 @@ class ResidentsFirestoreSource implements ResidentsRemoteSource {
 
     return _firestore.watchQuery(query).asyncMap((snapshot) async {
       final requests = snapshot.docs
-          .map((doc) => ApartmentRequestEntity.fromJson(doc.data(), uid: doc.id))
+          .map((doc) => ApartmentRequestModel.fromJson(doc.data(), uid: doc.id))
           .toList();
 
       // Best-effort join: resolve each requester's displayName. A missing
@@ -145,7 +146,7 @@ class ResidentsFirestoreSource implements ResidentsRemoteSource {
     final query = _firestore.buildingScoped(FirestoreCollections.users, buildingId);
     return _firestore.watchQuery(query).map(
           (snapshot) =>
-              snapshot.docs.map((doc) => UserEntity.fromJson(doc.data(), uid: doc.id)).toList(),
+              snapshot.docs.map((doc) => UserModel.fromJson(doc.data(), uid: doc.id)).toList(),
         );
   }
 
@@ -154,14 +155,14 @@ class ResidentsFirestoreSource implements ResidentsRemoteSource {
     final snapshot = await _firestore.getDocument(FirestorePaths.user(uid));
     final data = snapshot.data();
     if (!snapshot.exists || data == null) return null;
-    return UserEntity.fromJson(data, uid: uid);
+    return UserModel.fromJson(data, uid: uid);
   }
 
   @override
   Future<List<PostEntity>> fetchPostsForActivitySummary(String buildingId) async {
     final query = _firestore.buildingScoped(FirestoreCollections.posts, buildingId);
     final snapshot = await _firestore.getQuery(query);
-    return snapshot.docs.map((doc) => PostEntity.fromJson(doc.data(), id: doc.id)).toList();
+    return snapshot.docs.map((doc) => PostModel.fromJson(doc.data(), id: doc.id)).toList();
   }
 
   @override

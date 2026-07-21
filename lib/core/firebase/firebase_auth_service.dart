@@ -127,6 +127,43 @@ class FirebaseAuthService {
     }
   }
 
+  /// Creates a brand-new email/password account and signs it in
+  /// immediately (Firebase Auth's own behavior). Used by the self-service
+  /// admin sign-up flow — see `AuthRepositoryImpl.signUpAsAdmin`.
+  Future<Result<User>> createUserWithEmailAndPassword(
+    String email,
+    String password,
+  ) async {
+    try {
+      final credential = await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
+      final user = credential.user;
+      if (user == null) {
+        return const Left(UnknownFailure('Account creation failed. Please try again.'));
+      }
+      return Right(user);
+    } on FirebaseAuthException catch (e, stack) {
+      return Left(AppFailure.fromFirebaseAuthException(e, stack));
+    } catch (e, stack) {
+      return Left(AppFailure.fromException(e, stack));
+    }
+  }
+
+  /// Deletes the currently signed-in Firebase Auth user — a compensating
+  /// action for when Firestore writes fail right after account creation
+  /// (e.g. a bootstrap-admin sign-up race), so the email address isn't left
+  /// permanently stuck on an orphaned auth-only account.
+  Future<Result<void>> deleteCurrentUser() async {
+    try {
+      await _auth.currentUser?.delete();
+      return const Right(null);
+    } catch (e, stack) {
+      return Left(AppFailure.fromException(e, stack));
+    }
+  }
+
   Future<Result<void>> sendPasswordResetEmail(String email) async {
     try {
       await _auth.sendPasswordResetEmail(email: email.trim());

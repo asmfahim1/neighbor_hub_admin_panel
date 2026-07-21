@@ -4,7 +4,8 @@ class AppRoutes {
   static final navigatorKey = GlobalKey<NavigatorState>();
 
   static const settings = '/settings';
-  static String initialRoute = auth;
+  static String initialRoute = splash;
+  static const splash = '/splash';
     static const dashboard = '/dashboard';
     static const buildings = '/buildings';
     static const apartments = '/apartments';
@@ -17,5 +18,6 @@ class AppRoutes {
     static const notifications = '/notifications';
     static const profile = '/profile';
     static const auth = '/auth';
+    static const signUp = '/sign-up';
   // arcle:feature_routes
 }

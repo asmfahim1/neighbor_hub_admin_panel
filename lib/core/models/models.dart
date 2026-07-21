@@ -1,7 +1,10 @@
-/// Barrel export for every shared, framework-agnostic Firestore entity.
+/// Barrel export for every shared, framework-agnostic domain entity — pure
+/// fields and business logic, zero Firestore/JSON knowledge.
 ///
-/// Import this single file from a feature's domain/data layer instead of
-/// importing individual model files piecemeal.
+/// Import this from `domain/`, `presentation/`, or a repository
+/// implementation. For the data-layer DTOs that actually parse/serialize
+/// these (used only inside `data/source/*_remote_source.dart` files), see
+/// `data_models.dart` instead.
 library;
 
 export 'announcement_entity.dart';

@@ -1,13 +1,15 @@
 import 'package:equatable/equatable.dart';
 
 import '../constants/user_role.dart';
-import '../firebase/firestore_converters.dart';
 
 /// Mirrors `users/{uid}` (public profile) — `05_FIRESTORE_DATABASE.md` §3.2.
 ///
 /// Deliberately holds only what any same-building member may read (Resident
 /// Directory, post/comment authorship, chat participant info). Sensitive
 /// fields live in [UserPrivateAccountEntity].
+///
+/// Pure domain object — no Firestore/JSON knowledge. See [UserModel]
+/// (`user_model.dart`) for parsing/serialization.
 class UserEntity extends Equatable {
   const UserEntity({
     required this.uid,
@@ -36,27 +38,6 @@ class UserEntity extends Equatable {
 
   bool get isPrimaryResident => apartmentId != null;
 
-  factory UserEntity.fromJson(Map<String, dynamic> json, {required String uid}) {
-    return UserEntity(
-      uid: uid,
-      displayName: json['displayName']?.toString() ?? '',
-      authProvider: AppAuthProvider.fromValue(json['authProvider']?.toString()),
-      photoUrl: json['photoUrl']?.toString(),
-      buildingId: json['buildingId']?.toString(),
-      apartmentId: json['apartmentId']?.toString(),
-      createdAt: FirestoreConverters.toDateOrNow(json['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'displayName': displayName,
-        'authProvider': authProvider.value,
-        'photoUrl': photoUrl,
-        'buildingId': buildingId,
-        'apartmentId': apartmentId,
-        'createdAt': FirestoreConverters.fromDate(createdAt),
-      };
-
   UserEntity copyWith({
     String? displayName,
     String? photoUrl,
@@ -82,6 +63,7 @@ class UserEntity extends Equatable {
 /// Mirrors `users/{uid}/private/account` — `05_FIRESTORE_DATABASE.md` §3.2b.
 ///
 /// Never readable by other residents; only the owner and building admins.
+/// Pure domain object — see [UserPrivateAccountModel] for parsing/serialization.
 class UserPrivateAccountEntity extends Equatable {
   const UserPrivateAccountEntity({
     required this.uid,
@@ -98,28 +80,6 @@ class UserPrivateAccountEntity extends Equatable {
   final AccountStatus accountStatus;
   final String? fcmToken;
   final DateTime createdAt;
-
-  factory UserPrivateAccountEntity.fromJson(
-    Map<String, dynamic> json, {
-    required String uid,
-  }) {
-    return UserPrivateAccountEntity(
-      uid: uid,
-      email: json['email']?.toString() ?? '',
-      role: UserRole.fromValue(json['role']?.toString()),
-      accountStatus: AccountStatus.fromValue(json['accountStatus']?.toString()),
-      fcmToken: json['fcmToken']?.toString(),
-      createdAt: FirestoreConverters.toDateOrNow(json['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'email': email,
-        'role': role.value,
-        'accountStatus': accountStatus.value,
-        'fcmToken': fcmToken,
-        'createdAt': FirestoreConverters.fromDate(createdAt),
-      };
 
   @override
   List<Object?> get props => [uid, email, role, accountStatus, fcmToken, createdAt];

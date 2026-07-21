@@ -1,5 +1,6 @@
-// No feature-local model: `BuildingEntity` (from `core/models/`) is used
-// directly end-to-end (Firestore doc <-> entity), since it already tolerates
-// the Firestore wire format via `FirestoreConverters`. See
-// `lib/core/models/README.md` for why Model and Entity are collapsed.
-export '../../domain/entity/buildings_entity.dart';
+// Data-layer re-export: `BuildingModel` (from `core/models/`) is the
+// parsing DTO for this feature's `data/source/buildings_remote_source.dart`.
+// The domain layer never imports this file — only
+// `domain/entity/buildings_entity.dart`'s plain entity. See
+// `lib/core/models/README.md`.
+export '../../../../core/models/building_model.dart';

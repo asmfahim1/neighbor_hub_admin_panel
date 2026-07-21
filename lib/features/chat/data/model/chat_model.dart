@@ -1,22 +1,6 @@
-import '../../domain/entity/chat_entity.dart';
-
-class ChatModel {
-  ChatModel({
-    required this.id,
-    required this.title,
-  });
-
-  final String id;
-  final String title;
-
-  factory ChatModel.fromJson(Map<String, dynamic> json) {
-    return ChatModel(
-      id: json['id']?.toString() ?? '',
-      title: json['title']?.toString() ?? '',
-    );
-  }
-
-  ChatEntity toEntity() {
-    return ChatEntity(id: id, title: title);
-  }
-}
+// Data-layer re-export: `ConversationModel`/`MessageModel` (from
+// `core/models/`) are the parsing DTOs for this feature's
+// `data/source/chat_remote_source.dart`. The domain layer never imports
+// this file — only `domain/entity/chat_entity.dart`'s plain entities. See
+// `lib/core/models/README.md`.
+export '../../../../core/models/conversation_model.dart';

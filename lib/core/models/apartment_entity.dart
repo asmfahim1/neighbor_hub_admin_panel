@@ -1,9 +1,11 @@
 import 'package:equatable/equatable.dart';
 
 import '../constants/apartment_status.dart';
-import '../firebase/firestore_converters.dart';
 
 /// Mirrors `apartments/{apartmentId}` — `05_FIRESTORE_DATABASE.md` §3.3.
+///
+/// Pure domain object — no Firestore/JSON knowledge. See [ApartmentModel]
+/// (`apartment_model.dart`) for parsing/serialization.
 class ApartmentEntity extends Equatable {
   const ApartmentEntity({
     required this.id,
@@ -26,29 +28,6 @@ class ApartmentEntity extends Equatable {
   /// Set when [status] is [ApartmentStatus.occupied]; mirrors `users/{uid}.apartmentId`.
   final String? primaryResidentUid;
   final DateTime updatedAt;
-
-  factory ApartmentEntity.fromJson(Map<String, dynamic> json, {required String id}) {
-    return ApartmentEntity(
-      id: id,
-      buildingId: json['buildingId']?.toString() ?? '',
-      number: json['number']?.toString() ?? '',
-      floor: (json['floor'] as num?)?.toInt() ?? 0,
-      description: json['description']?.toString(),
-      status: ApartmentStatus.fromValue(json['status']?.toString()),
-      primaryResidentUid: json['primaryResidentUid']?.toString(),
-      updatedAt: FirestoreConverters.toDateOrNow(json['updatedAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'buildingId': buildingId,
-        'number': number,
-        'floor': floor,
-        'description': description,
-        'status': status.value,
-        'primaryResidentUid': primaryResidentUid,
-        'updatedAt': FirestoreConverters.fromDate(updatedAt),
-      };
 
   ApartmentEntity copyWith({
     String? number,

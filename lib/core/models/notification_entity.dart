@@ -1,10 +1,12 @@
 import 'package:equatable/equatable.dart';
 
 import '../constants/notification_category.dart';
-import '../firebase/firestore_converters.dart';
 
 /// Mirrors `notifications/{notificationId}` — `05_FIRESTORE_DATABASE.md` §3.13.
 /// Written directly by clients (no Cloud Function) — zero-cost notification design.
+///
+/// Pure domain object — no Firestore/JSON knowledge. See [NotificationModel]
+/// (`notification_model.dart`) for parsing/serialization.
 class NotificationEntity extends Equatable {
   const NotificationEntity({
     required this.id,
@@ -29,33 +31,6 @@ class NotificationEntity extends Equatable {
   final String? relatedConversationId;
   final bool isRead;
   final DateTime createdAt;
-
-  factory NotificationEntity.fromJson(Map<String, dynamic> json, {required String id}) {
-    return NotificationEntity(
-      id: id,
-      recipientUid: json['recipientUid']?.toString() ?? '',
-      buildingId: json['buildingId']?.toString() ?? '',
-      category: NotificationCategory.fromValue(json['category']?.toString()),
-      title: json['title']?.toString() ?? '',
-      body: json['body']?.toString() ?? '',
-      relatedPostId: json['relatedPostId']?.toString(),
-      relatedConversationId: json['relatedConversationId']?.toString(),
-      isRead: json['isRead'] as bool? ?? false,
-      createdAt: FirestoreConverters.toDateOrNow(json['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'recipientUid': recipientUid,
-        'buildingId': buildingId,
-        'category': category.value,
-        'title': title,
-        'body': body,
-        'relatedPostId': relatedPostId,
-        'relatedConversationId': relatedConversationId,
-        'isRead': isRead,
-        'createdAt': FirestoreConverters.fromDate(createdAt),
-      };
 
   NotificationEntity copyWith({bool? isRead}) => NotificationEntity(
         id: id,

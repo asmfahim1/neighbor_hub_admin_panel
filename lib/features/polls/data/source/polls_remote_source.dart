@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/constants/poll_status.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/poll_model.dart';
 import '../../domain/entity/polls_entity.dart';
 
 /// The swappable "endpoint" boundary for the Polls feature. A future custom
@@ -28,7 +29,7 @@ class PollsFirestoreSource implements PollsRemoteSource {
         .orderBy(FirestoreFields.createdAt, descending: true);
     return _firestore.watchQuery(query).map(
           (snapshot) =>
-              snapshot.docs.map((doc) => PollEntity.fromJson(doc.data(), id: doc.id)).toList(),
+              snapshot.docs.map((doc) => PollModel.fromJson(doc.data(), id: doc.id)).toList(),
         );
   }
 
@@ -37,14 +38,17 @@ class PollsFirestoreSource implements PollsRemoteSource {
     final query = _firestore.collection(FirestorePaths.pollVotes(pollId));
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => PollVoteEntity.fromJson(doc.data(), uid: doc.id, pollId: pollId))
+              .map((doc) => PollVoteModel.fromJson(doc.data(), uid: doc.id, pollId: pollId))
               .toList(),
         );
   }
 
   @override
   Future<void> createPoll(PollEntity poll) async {
-    await _firestore.addDocument(FirestoreCollections.polls, poll.toJson());
+    await _firestore.addDocument(
+      FirestoreCollections.polls,
+      PollModel.fromEntity(poll).toJson(),
+    );
   }
 
   @override

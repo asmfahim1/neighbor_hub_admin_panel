@@ -3,7 +3,9 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/constants/apartment_status.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/apartment_model.dart';
 import '../../../../core/models/user_entity.dart';
+import '../../../../core/models/user_model.dart';
 import '../../domain/entity/apartments_entity.dart';
 
 /// The swappable "endpoint" boundary for the Apartments feature. A future
@@ -29,19 +31,25 @@ class ApartmentsFirestoreSource implements ApartmentsRemoteSource {
     final query = _firestore.buildingScoped(FirestoreCollections.apartments, buildingId);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => ApartmentEntity.fromJson(doc.data(), id: doc.id))
+              .map((doc) => ApartmentModel.fromJson(doc.data(), id: doc.id))
               .toList(),
         );
   }
 
   @override
   Future<void> createApartment(ApartmentEntity apartment) async {
-    await _firestore.addDocument(FirestoreCollections.apartments, apartment.toJson());
+    await _firestore.addDocument(
+      FirestoreCollections.apartments,
+      ApartmentModel.fromEntity(apartment).toJson(),
+    );
   }
 
   @override
   Future<void> updateApartment(ApartmentEntity apartment) async {
-    await _firestore.updateDocument(FirestorePaths.apartment(apartment.id), apartment.toJson());
+    await _firestore.updateDocument(
+      FirestorePaths.apartment(apartment.id),
+      ApartmentModel.fromEntity(apartment).toJson(),
+    );
   }
 
   @override
@@ -62,6 +70,6 @@ class ApartmentsFirestoreSource implements ApartmentsRemoteSource {
     final snapshot = await _firestore.getDocument(FirestorePaths.user(uid));
     final data = snapshot.data();
     if (!snapshot.exists || data == null) return null;
-    return UserEntity.fromJson(data, uid: uid);
+    return UserModel.fromJson(data, uid: uid);
   }
 }

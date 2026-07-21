@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../core/di/injection.dart';
 import '../core/di/bloc_providers.dart';
 import '../features/settings/presentation/app_settings_cubit.dart';
 import '../features/settings/presentation/app_settings_state.dart';
@@ -22,7 +21,9 @@ class App extends StatelessWidget {
     return MultiBlocProvider(
       providers: AppBlocProviders.providers,
       child: BlocBuilder<AppSettingsCubit, AppSettingsState>(
-        bloc: getIt<AppSettingsCubit>(),
+        // No explicit `bloc:` — resolves the same instance `MultiBlocProvider`
+        // just created above, instead of a second, out-of-sync one via GetIt
+        // (which also wasn't registered there, causing a startup crash).
         builder: (context, settings) {
           return MaterialApp(
             title: 'NeighborHub Admin',

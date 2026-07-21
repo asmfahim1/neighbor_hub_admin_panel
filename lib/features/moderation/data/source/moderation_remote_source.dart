@@ -2,6 +2,7 @@ import 'package:injectable/injectable.dart';
 
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/data_models.dart';
 import '../../../../core/models/models.dart';
 
 /// The swappable "endpoint" boundary for the Moderation feature. A future
@@ -30,7 +31,7 @@ class ModerationFirestoreSource implements ModerationRemoteSource {
         .orderBy(FirestoreFields.createdAt, descending: true);
     return _firestore.watchQuery(query).map(
           (snapshot) =>
-              snapshot.docs.map((doc) => PostEntity.fromJson(doc.data(), id: doc.id)).toList(),
+              snapshot.docs.map((doc) => PostModel.fromJson(doc.data(), id: doc.id)).toList(),
         );
   }
 
@@ -41,7 +42,7 @@ class ModerationFirestoreSource implements ModerationRemoteSource {
         .orderBy(FirestoreFields.createdAt, descending: false);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => CommentEntity.fromJson(doc.data(), id: doc.id, postId: postId))
+              .map((doc) => CommentModel.fromJson(doc.data(), id: doc.id, postId: postId))
               .toList(),
         );
   }
@@ -51,7 +52,7 @@ class ModerationFirestoreSource implements ModerationRemoteSource {
     final snapshot = await _firestore.getDocument(FirestorePaths.postAuthorship(postId));
     final data = snapshot.data();
     if (!snapshot.exists || data == null) return null;
-    return PostAuthorshipEntity.fromJson(data, postId: postId);
+    return PostAuthorshipModel.fromJson(data, postId: postId);
   }
 
   @override

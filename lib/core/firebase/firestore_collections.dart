@@ -46,6 +46,15 @@ class FirestoreFields {
 class FirestorePaths {
   const FirestorePaths._();
 
+  /// Single-building MVP: every building-scoped document shares this one
+  /// well-known building ID (`admen_web_app_ui_functionality.md` §2 — "every
+  /// building-scoped document should use the same project-wide `buildingId`
+  /// value"). Using a fixed ID (rather than an auto-generated one) is what
+  /// lets the self-service admin sign-up flow's security rule cheaply check
+  /// "has anyone already claimed this building" via `exists()`, which
+  /// Firestore rules can't express as a collection-emptiness query.
+  static const String singleBuildingId = 'main';
+
   static String building(String buildingId) =>
       '${FirestoreCollections.buildings}/$buildingId';
 

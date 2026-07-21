@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/constants/apartment_status.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/building_model.dart';
 import '../../domain/entity/buildings_entity.dart';
 
 /// The swappable "endpoint" boundary for the Buildings feature. A future
@@ -32,7 +33,7 @@ class BuildingsFirestoreSource implements BuildingsRemoteSource {
     return _firestore.watchDocument(FirestorePaths.building(buildingId)).map((snapshot) {
       final data = snapshot.data();
       if (!snapshot.exists || data == null) return null;
-      return BuildingEntity.fromJson(data, id: buildingId);
+      return BuildingModel.fromJson(data, id: buildingId);
     });
   }
 
@@ -41,14 +42,14 @@ class BuildingsFirestoreSource implements BuildingsRemoteSource {
     final snapshot = await _firestore.getDocument(FirestorePaths.building(buildingId));
     final data = snapshot.data();
     if (!snapshot.exists || data == null) return null;
-    return BuildingEntity.fromJson(data, id: buildingId);
+    return BuildingModel.fromJson(data, id: buildingId);
   }
 
   @override
   Future<void> saveBuilding(BuildingEntity building) async {
     await _firestore.setDocument(
       FirestorePaths.building(building.id),
-      building.toJson(),
+      BuildingModel.fromEntity(building).toJson(),
       merge: true,
     );
   }

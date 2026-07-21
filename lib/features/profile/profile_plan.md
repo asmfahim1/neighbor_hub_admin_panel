@@ -9,7 +9,8 @@
 > `settings/` rather than duplicating theme-toggle logic; decide during
 > implementation.
 
-**Status:** Scaffolded only — no business logic implemented yet.
+**Status:** Data/domain/presentation wired to Firebase. UI is still the
+arcle placeholder — real UI/UX is a separate pass once the design is ready.
 
 ## Overview
 
@@ -28,9 +29,17 @@ point into the single-admin handoff flow (Residents §7.5.4).
 - [ ] Theme toggle control (reuse/compose `AppSettingsCubit` from `settings/` rather than duplicating)
 - [ ] Sign-out action
 - [ ] "Transfer Admin Role" entry point, opening the Residents §7.5.4 picker
+- [ ] Replace the placeholder `profile_screen.dart` (compiles against the real `ProfileBloc`/`ProfileState`, no design applied) with real UI once available
 
 ## Firebase Connection Tasks
 
-- [ ] Update own `users/{uid}`: `displayName`, `photoUrl` (self-update path, unaffected by any admin-only rule carve-outs)
-- [ ] Sign out via Firebase Auth
-- [ ] No direct writes here for Transfer Admin Role — that batch lives in Residents §7.5.4; this screen only opens the picker
+- [x] Update own `users/{uid}`: `displayName`, `photoUrl` (self-update path, unaffected by any admin-only rule carve-outs) — `UpdateOwnProfileUseCase` → `ProfileFirestoreSource.updateOwnProfile` (partial `update()`, only the two fields ever touched here — `buildingId`/`apartmentId`/`authProvider`/`createdAt` are never written from this path)
+- [x] Sign out via Firebase Auth — `ProfileSignOutUseCase` → `ProfileFirestoreSource.signOut`, calling `FirebaseAuthService.signOut()` directly (not the Auth feature's repository — see Architecture notes)
+- [x] No direct writes here for Transfer Admin Role — confirmed, that batch lives entirely in Residents §7.5.4; this feature has no such method
+- [x] Bonus: realtime watch of the admin's own `users/{uid}` doc — `WatchOwnProfileUseCase` → `ProfileFirestoreSource.watchOwnProfile`
+
+### Architecture notes
+
+- Uses `UserEntity` directly from `core/models/` (1:1 document mirror) — `domain/entity` is a re-export shim, same pattern as Buildings.
+- `data/source/profile_remote_source.dart` (`ProfileRemoteSource` / `ProfileFirestoreSource`) injects `FirestoreService` + `FirebaseAuthService` directly, mirroring `AuthFirestoreSource`'s shape — deliberately does **not** import the Auth feature's `domain`/`data` layers (illegal cross-feature coupling; features only ever share `core/`).
+- Theme toggle is not duplicated — the plan explicitly defers to composing the existing `AppSettingsCubit` (`lib/features/settings/`) once the UI pass happens.

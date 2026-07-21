@@ -4,6 +4,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
 import '../../../../core/models/notification_entity.dart';
+import '../../../../core/models/notification_model.dart';
 import '../../../../core/notifications/notification_service.dart';
 
 /// The swappable "endpoint" boundary for the Notifications feature. A future
@@ -41,14 +42,14 @@ class NotificationsFirestoreSource implements NotificationsRemoteSource {
           if (change.type != DocumentChangeType.added) continue;
           final data = change.doc.data();
           if (data == null) continue;
-          final notification = NotificationEntity.fromJson(data, id: change.doc.id);
+          final notification = NotificationModel.fromJson(data, id: change.doc.id);
           _localNotifications.show(title: notification.title, body: notification.body);
         }
       }
       isFirstSnapshot = false;
 
       return snapshot.docs
-          .map((doc) => NotificationEntity.fromJson(doc.data(), id: doc.id))
+          .map((doc) => NotificationModel.fromJson(doc.data(), id: doc.id))
           .toList();
     });
   }

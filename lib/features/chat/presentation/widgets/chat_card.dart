@@ -1,16 +1,2 @@
-import 'package:flutter/material.dart';
-import '../../domain/entity/chat_entity.dart';
-
-class ChatCard extends StatelessWidget {
-  const ChatCard({super.key, required this.entity});
-
-  final ChatEntity entity;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      title: Text(entity.title),
-      subtitle: Text(entity.id),
-    );
-  }
-}
+// Placeholder removed: inlined directly into `chat_screen.dart` for now
+// (see `chat_plan.md` for the real UI task list, still pending design).

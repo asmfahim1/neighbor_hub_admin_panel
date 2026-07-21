@@ -44,6 +44,57 @@ service cloud.firestore {
       return category in ["announcement", "chat", "reaction", "comment", "poll"];
     }
 
+    // Single-building MVP: this is the one well-known building ID every
+    // building-scoped document shares (see FirestorePaths.singleBuildingId).
+    // A fixed ID (not an auto-generated one) is what lets the three
+    // bootstrap functions below cheaply gate on "has anyone already claimed
+    // this" via exists(), which rules can't express as a collection-
+    // emptiness query.
+    function isTheSingleBuilding(buildingId) {
+      return buildingId == "main";
+    }
+
+    function theSingleBuildingExists() {
+      return exists(/databases/$(database)/documents/buildings/main);
+    }
+
+    // Self-service admin sign-up (admen_web_app_ui_functionality.md §7.1,
+    // "Bootstrap-once" model): allows exactly the FIRST caller to create the
+    // single building, their own public profile with buildingId already set,
+    // and their own private account with role "admin" -- all three gated on
+    // the building not existing yet, so this can only ever succeed once
+    // globally. After that, every one of these three functions is
+    // permanently false for everyone, and further admin changes only happen
+    // via the existing Transfer Admin Role flow (Residents §7.5.4).
+    //
+    // Within one WriteBatch, exists()/get() calls see the pre-batch state --
+    // not sibling writes in the same batch -- so all three checks below
+    // evaluate consistently against "no building yet", and Firestore's own
+    // create-semantics (fails if the target doc already exists) is what
+    // makes a concurrent double sign-up race safe: only one such batch can
+    // ever actually commit the buildings/main document.
+    function isBootstrappingFirstAdmin(buildingId) {
+      return isTheSingleBuilding(buildingId)
+        && !theSingleBuildingExists()
+        && request.resource.data.adminUid == request.auth.uid;
+    }
+
+    function isBootstrappingAdminUserCreate() {
+      return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
+        && request.resource.data.displayName is string
+        && request.resource.data.buildingId == "main"
+        && request.resource.data.apartmentId == null
+        && !theSingleBuildingExists();
+    }
+
+    function isBootstrappingAdminPrivateCreate() {
+      return request.resource.data.keys().hasOnly(["email", "role", "accountStatus", "fcmToken", "createdAt"])
+        && request.resource.data.email is string
+        && request.resource.data.role == "admin"
+        && request.resource.data.accountStatus == "active"
+        && !theSingleBuildingExists();
+    }
+
     function isPublicUserCreate() {
       return request.resource.data.keys().hasOnly(["displayName", "authProvider", "photoUrl", "buildingId", "apartmentId", "createdAt"])
         && request.resource.data.displayName is string
@@ -169,18 +220,19 @@ service cloud.firestore {
 
     match /buildings/{buildingId} {
       allow read: if isBuildingMember(buildingId);
-      allow create, update, delete: if isAdminOf(buildingId);
+      allow create: if isAdminOf(buildingId) || isBootstrappingFirstAdmin(buildingId);
+      allow update, delete: if isAdminOf(buildingId);
     }
 
     match /users/{uid} {
       allow read: if isOwnDoc(uid) || isResidentDirectoryViewer(resource.data.buildingId) || isAdminOf(resource.data.buildingId);
-      allow create: if isOwnDoc(uid) && isPublicUserCreate();
+      allow create: if isOwnDoc(uid) && (isPublicUserCreate() || isBootstrappingAdminUserCreate());
       allow update: if (isOwnDoc(uid) && isSelfPublicUserUpdate()) || (isAdminOf(resource.data.buildingId) && isAdminPublicUserUpdate());
       allow delete: if false;
 
       match /private/account {
         allow read: if isOwnDoc(uid) || isAdminOf(userDoc(uid).data.buildingId);
-        allow create: if isOwnDoc(uid) && isSelfPrivateCreate();
+        allow create: if isOwnDoc(uid) && (isSelfPrivateCreate() || isBootstrappingAdminPrivateCreate());
         allow update: if (isOwnDoc(uid) && isSelfPrivateUpdate()) || isAdminPrivateUpdate(uid);
         allow delete: if false;
       }

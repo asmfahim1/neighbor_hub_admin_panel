@@ -4,6 +4,7 @@ import '../../../../core/firebase/firebase_auth_service.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
 import '../../../../core/models/user_entity.dart';
+import '../../../../core/models/user_model.dart';
 
 /// The swappable "endpoint" boundary for the Profile feature. A future
 /// custom backend adds `ProfileApiSource implements ProfileRemoteSource` and
@@ -36,7 +37,7 @@ class ProfileFirestoreSource implements ProfileRemoteSource {
     return _firestore.watchDocument(FirestorePaths.user(uid)).map((snapshot) {
       final data = snapshot.data();
       if (!snapshot.exists || data == null) return null;
-      return UserEntity.fromJson(data, uid: uid);
+      return UserModel.fromJson(data, uid: uid);
     });
   }
 

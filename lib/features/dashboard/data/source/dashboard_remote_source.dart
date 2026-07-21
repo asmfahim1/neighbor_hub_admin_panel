@@ -3,6 +3,7 @@ import 'package:injectable/injectable.dart';
 import '../../../../core/constants/apartment_request_status.dart';
 import '../../../../core/firebase/firestore_collections.dart';
 import '../../../../core/firebase/firestore_service.dart';
+import '../../../../core/models/data_models.dart';
 import '../../../../core/models/models.dart';
 
 /// The swappable "endpoint" boundary for the Dashboard feature. A future
@@ -26,7 +27,7 @@ class DashboardFirestoreSource implements DashboardRemoteSource {
     final query = _firestore.buildingScoped(FirestoreCollections.apartments, buildingId);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => ApartmentEntity.fromJson(doc.data(), id: doc.id))
+              .map((doc) => ApartmentModel.fromJson(doc.data(), id: doc.id))
               .toList(),
         );
   }
@@ -38,7 +39,7 @@ class DashboardFirestoreSource implements DashboardRemoteSource {
         .where(FirestoreFields.status, isEqualTo: ApartmentRequestStatus.pending.value);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => ApartmentRequestEntity.fromJson(doc.data(), uid: doc.id))
+              .map((doc) => ApartmentRequestModel.fromJson(doc.data(), uid: doc.id))
               .toList(),
         );
   }
@@ -51,7 +52,7 @@ class DashboardFirestoreSource implements DashboardRemoteSource {
         .limit(limit);
     return _firestore.watchQuery(query).map(
           (snapshot) =>
-              snapshot.docs.map((doc) => PostEntity.fromJson(doc.data(), id: doc.id)).toList(),
+              snapshot.docs.map((doc) => PostModel.fromJson(doc.data(), id: doc.id)).toList(),
         );
   }
 
@@ -63,7 +64,7 @@ class DashboardFirestoreSource implements DashboardRemoteSource {
         .limit(limit);
     return _firestore.watchQuery(query).map(
           (snapshot) => snapshot.docs
-              .map((doc) => AnnouncementEntity.fromJson(doc.data(), id: doc.id))
+              .map((doc) => AnnouncementModel.fromJson(doc.data(), id: doc.id))
               .toList(),
         );
   }

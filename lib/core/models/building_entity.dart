@@ -1,14 +1,11 @@
 import 'package:equatable/equatable.dart';
 
-import '../firebase/firestore_converters.dart';
-
 /// Mirrors `buildings/{buildingId}` — `05_FIRESTORE_DATABASE.md` §3.1,
 /// plus the `adminUid` addendum from `admen_web_app_ui_functionality.md` §6.1.
 ///
-/// Canonical, framework-agnostic data class — shared by every feature that
-/// touches `buildings` and copy-paste ready for the future Resident App.
-/// `fromJson`/`toJson` are the only Firestore-shaped boundary; everything
-/// else in the app works with plain fields.
+/// Pure domain object — no Firestore/JSON knowledge. Parsing/serialization
+/// lives on [BuildingModel] (`building_model.dart`), the data-layer class
+/// that extends this one. See `lib/core/models/README.md`.
 class BuildingEntity extends Equatable {
   const BuildingEntity({
     required this.id,
@@ -27,27 +24,6 @@ class BuildingEntity extends Equatable {
   final int apartmentsPerFloor;
   final String? adminUid;
   final DateTime createdAt;
-
-  factory BuildingEntity.fromJson(Map<String, dynamic> json, {required String id}) {
-    return BuildingEntity(
-      id: id,
-      name: json['name']?.toString() ?? '',
-      address: json['address']?.toString() ?? '',
-      totalFloors: (json['totalFloors'] as num?)?.toInt() ?? 0,
-      apartmentsPerFloor: (json['apartmentsPerFloor'] as num?)?.toInt() ?? 0,
-      adminUid: json['adminUid']?.toString(),
-      createdAt: FirestoreConverters.toDateOrNow(json['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'name': name,
-        'address': address,
-        'totalFloors': totalFloors,
-        'apartmentsPerFloor': apartmentsPerFloor,
-        if (adminUid != null) 'adminUid': adminUid,
-        'createdAt': FirestoreConverters.fromDate(createdAt),
-      };
 
   BuildingEntity copyWith({
     String? name,

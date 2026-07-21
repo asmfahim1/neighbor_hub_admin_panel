@@ -1,9 +1,13 @@
 import 'package:equatable/equatable.dart';
 
 import '../constants/poll_status.dart';
-import '../firebase/firestore_converters.dart';
 
 /// One entry of `polls/{pollId}.options` — `05_FIRESTORE_DATABASE.md` §3.11.
+///
+/// Pure domain object. Never fetched/parsed as its own top-level document —
+/// it only ever exists embedded in a poll's `options` array, so its
+/// JSON shape is parsed/serialized entirely by [PollModel]
+/// (`poll_model.dart`), not by this class.
 class PollOptionEntity extends Equatable {
   const PollOptionEntity({
     required this.id,
@@ -14,20 +18,6 @@ class PollOptionEntity extends Equatable {
   final String id;
   final String text;
   final int voteCount;
-
-  factory PollOptionEntity.fromJson(Map<String, dynamic> json) {
-    return PollOptionEntity(
-      id: json['id']?.toString() ?? '',
-      text: json['text']?.toString() ?? '',
-      voteCount: (json['voteCount'] as num?)?.toInt() ?? 0,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'text': text,
-        'voteCount': voteCount,
-      };
 
   PollOptionEntity copyWith({int? voteCount}) => PollOptionEntity(
         id: id,
@@ -40,6 +30,9 @@ class PollOptionEntity extends Equatable {
 }
 
 /// Mirrors `polls/{pollId}` — `05_FIRESTORE_DATABASE.md` §3.11.
+///
+/// Pure domain object — no Firestore/JSON knowledge. See [PollModel]
+/// (`poll_model.dart`) for parsing/serialization.
 class PollEntity extends Equatable {
   const PollEntity({
     required this.id,
@@ -67,32 +60,6 @@ class PollEntity extends Equatable {
   /// (`admen_web_app_ui_functionality.md` §7.8).
   bool get isExpired => closesAt != null && DateTime.now().isAfter(closesAt!);
 
-  factory PollEntity.fromJson(Map<String, dynamic> json, {required String id}) {
-    final rawOptions = json['options'] as List<dynamic>? ?? const [];
-    return PollEntity(
-      id: id,
-      buildingId: json['buildingId']?.toString() ?? '',
-      question: json['question']?.toString() ?? '',
-      options: rawOptions
-          .map((o) => PollOptionEntity.fromJson(Map<String, dynamic>.from(o as Map)))
-          .toList(),
-      status: PollStatus.fromValue(json['status']?.toString()),
-      createdBy: json['createdBy']?.toString() ?? '',
-      createdAt: FirestoreConverters.toDateOrNow(json['createdAt']),
-      closesAt: FirestoreConverters.toDate(json['closesAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'buildingId': buildingId,
-        'question': question,
-        'options': options.map((o) => o.toJson()).toList(),
-        'status': status.value,
-        'createdBy': createdBy,
-        'createdAt': FirestoreConverters.fromDate(createdAt),
-        'closesAt': FirestoreConverters.fromDate(closesAt),
-      };
-
   PollEntity copyWith({
     List<PollOptionEntity>? options,
     PollStatus? status,
@@ -115,7 +82,8 @@ class PollEntity extends Equatable {
 }
 
 /// Mirrors `polls/{pollId}/votes/{uid}` — `05_FIRESTORE_DATABASE.md` §3.12.
-/// Document ID is the voter's uid; a vote is immutable once cast.
+/// Document ID is the voter's uid; a vote is immutable once cast. Pure
+/// domain object — see [PollVoteModel] for parsing/serialization.
 class PollVoteEntity extends Equatable {
   const PollVoteEntity({
     required this.uid,
@@ -128,24 +96,6 @@ class PollVoteEntity extends Equatable {
   final String pollId;
   final String optionId;
   final DateTime createdAt;
-
-  factory PollVoteEntity.fromJson(
-    Map<String, dynamic> json, {
-    required String uid,
-    required String pollId,
-  }) {
-    return PollVoteEntity(
-      uid: uid,
-      pollId: pollId,
-      optionId: json['optionId']?.toString() ?? '',
-      createdAt: FirestoreConverters.toDateOrNow(json['createdAt']),
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-        'optionId': optionId,
-        'createdAt': FirestoreConverters.fromDate(createdAt),
-      };
 
   @override
   List<Object?> get props => [uid, pollId, optionId, createdAt];
