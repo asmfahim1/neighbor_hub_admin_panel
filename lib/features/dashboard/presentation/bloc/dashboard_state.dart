@@ -9,25 +9,29 @@ class DashboardState extends Equatable {
     this.status = DashboardStatus.initial,
     this.dashboard = const DashboardEntity(),
     this.message,
+    this.isPreview = false,
   });
 
   final DashboardStatus status;
   final DashboardEntity dashboard;
   final String? message;
+  final bool isPreview;
 
   DashboardState copyWith({
     DashboardStatus? status,
     DashboardEntity? dashboard,
     String? message,
     bool clearMessage = false,
+    bool? isPreview,
   }) {
     return DashboardState(
       status: status ?? this.status,
       dashboard: dashboard ?? this.dashboard,
       message: clearMessage ? null : (message ?? this.message),
+      isPreview: isPreview ?? this.isPreview,
     );
   }
 
   @override
-  List<Object?> get props => [status, dashboard, message];
+  List<Object?> get props => [status, dashboard, message, isPreview];
 }

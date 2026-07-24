@@ -26,7 +26,8 @@ class AppRouter {
       case AppRoutes.splash:
         return MaterialPageRoute(builder: (_) => const SplashScreen());
             case AppRoutes.dashboard:
-        return MaterialPageRoute(builder: (_) => const DashboardScreen());
+        final previewMode = settings.arguments == true;
+        return MaterialPageRoute(builder: (_) => DashboardScreen(previewMode: previewMode));
             case AppRoutes.buildings:
         return MaterialPageRoute(builder: (_) => const BuildingsScreen());
             case AppRoutes.apartments:

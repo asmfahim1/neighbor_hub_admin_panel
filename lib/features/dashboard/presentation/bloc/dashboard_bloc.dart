@@ -21,6 +21,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     this._watchRecentAnnouncements,
   ) : super(const DashboardState()) {
     on<DashboardWatchStarted>(_onWatchStarted);
+    on<DashboardPreviewStarted>(_onPreviewStarted);
     on<DashboardApartmentsUpdated>(_onApartmentsUpdated);
     on<DashboardPendingRequestsUpdated>(_onPendingRequestsUpdated);
     on<DashboardPostsUpdated>(_onPostsUpdated);
@@ -44,7 +45,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     DashboardWatchStarted event,
     Emitter<DashboardState> emit,
   ) async {
-    emit(state.copyWith(status: DashboardStatus.loading));
+    emit(state.copyWith(status: DashboardStatus.loading, isPreview: false));
     await _cancelSubscriptions();
 
     _subscriptions.addAll([
@@ -65,6 +66,25 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         onError: (Object e) => add(DashboardFailed(e.toString())),
       ),
     ]);
+  }
+
+  Future<void> _onPreviewStarted(
+    DashboardPreviewStarted event,
+    Emitter<DashboardState> emit,
+  ) async {
+    await _cancelSubscriptions();
+    _apartments = const [];
+    _pendingRequests = const [];
+    _posts = const [];
+    _announcements = const [];
+    emit(
+      state.copyWith(
+        status: DashboardStatus.loaded,
+        dashboard: const DashboardEntity(),
+        clearMessage: true,
+        isPreview: true,
+      ),
+    );
   }
 
   void _onApartmentsUpdated(DashboardApartmentsUpdated event, Emitter<DashboardState> emit) {

@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../core/common_widgets/common_button.dart';
-import '../../../../core/common_widgets/common_text_field.dart';
-import '../../../../core/localization/app_strings.dart';
-import '../../../../core/utils/app_validators.dart';
-import '../../../../core/utils/dimensions.dart';
-import '../bloc/auth_bloc.dart';
-import '../bloc/auth_event.dart';
-import '../bloc/auth_state.dart';
-import 'social_sign_in_buttons.dart';
+import 'package:neighbor_hub_admin_panel/core/common_widgets/common_button.dart';
+import 'package:neighbor_hub_admin_panel/core/common_widgets/common_text_field.dart';
+import 'package:neighbor_hub_admin_panel/core/localization/app_strings.dart';
+import 'package:neighbor_hub_admin_panel/core/route_handler/app_routes.dart';
+import 'package:neighbor_hub_admin_panel/core/utils/app_validators.dart';
+import 'package:neighbor_hub_admin_panel/core/utils/dimensions.dart';
+import 'package:neighbor_hub_admin_panel/features/auth/presentation/bloc/auth_bloc.dart';
+import 'package:neighbor_hub_admin_panel/features/auth/presentation/bloc/auth_event.dart';
+import 'package:neighbor_hub_admin_panel/features/auth/presentation/bloc/auth_state.dart';
+import 'package:neighbor_hub_admin_panel/features/auth/presentation/widgets/social_sign_in_buttons.dart';
+import 'package:neighbor_hub_admin_panel/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:neighbor_hub_admin_panel/features/dashboard/presentation/bloc/dashboard_event.dart';
 
 /// The sign-in form: email/password fields, submit, forgot-password, and
 /// the social sign-in buttons. Reused as-is by both the mobile and web
@@ -40,10 +43,17 @@ class _SignInFormState extends State<SignInForm> {
   }
 
   void _submit() {
-    if (!_formKey.currentState!.validate()) return;
+    /*if (!_formKey.currentState!.validate()) return;
     context.read<AuthBloc>().add(
           SignInWithEmailRequested(_emailController.text.trim(), _passwordController.text),
-        );
+        );*/
+
+    context.read<DashboardBloc>().add(const DashboardPreviewStarted());
+    Navigator.of(context).pushNamedAndRemoveUntil(
+      AppRoutes.dashboard,
+      (route) => false,
+      arguments: true,
+    );
   }
 
   Future<void> _showForgotPasswordDialog() async {
@@ -152,11 +162,16 @@ class _SignInFormState extends State<SignInForm> {
           Row(
             children: [
               const Expanded(child: Divider()),
-              Padding(
-                padding: Dimensions.paddingSymmetric(horizontal: 12),
-                child: Text(
-                  context.tr('auth_or_continue_with'),
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: Dimensions.font(12)),
+              Flexible(
+                child: Padding(
+                  padding: Dimensions.paddingSymmetric(horizontal: 12),
+                  child: Text(
+                    context.tr('auth_or_continue_with'),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: Dimensions.font(12)),
+                  ),
                 ),
               ),
               const Expanded(child: Divider()),

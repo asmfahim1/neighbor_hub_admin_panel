@@ -137,11 +137,16 @@ class _SignUpFormState extends State<SignUpForm> {
         Row(
           children: [
             const Expanded(child: Divider()),
-            Padding(
-              padding: Dimensions.paddingSymmetric(horizontal: 12),
-              child: Text(
-                context.tr('auth_or_continue_with_email'),
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: Dimensions.font(12)),
+            Flexible(
+              child: Padding(
+                padding: Dimensions.paddingSymmetric(horizontal: 12),
+                child: Text(
+                  context.tr('auth_or_continue_with_email'),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontSize: Dimensions.font(12)),
+                ),
               ),
             ),
             const Expanded(child: Divider()),

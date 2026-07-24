@@ -136,6 +136,8 @@ prefer a normal screen to keep routing simple.
 
 - [x] Build authenticated admin shell on the Dashboard route: responsive web sidebar +
       mobile bottom navigation.
+- [x] Keep `dashboard_screen.dart` as a thin route/session wrapper and place
+      dashboard UI components in `presentation/widgets/`.
 - [ ] Extract the admin shell into a reusable wrapper for every post-login
       feature screen.
 - [x] Mobile bottom navigation: `Dashboard`, `Requests`, `Announcements`,

@@ -18,8 +18,12 @@ class DashboardWatchStarted extends DashboardEvent {
   List<Object?> get props => [buildingId];
 }
 
-/// Internal — one per underlying stream, each triggers a full recompute via
-/// `DashboardEntity.compute` using the latest snapshot of all four lists.
+/// Starts the dashboard in UI-preview mode without Firebase listeners.
+class DashboardPreviewStarted extends DashboardEvent {
+  const DashboardPreviewStarted();
+}
+
+/// Internal event emitted when the apartments stream updates.
 class DashboardApartmentsUpdated extends DashboardEvent {
   const DashboardApartmentsUpdated(this.apartments);
   final List<ApartmentEntity> apartments;
@@ -28,6 +32,7 @@ class DashboardApartmentsUpdated extends DashboardEvent {
   List<Object?> get props => [apartments];
 }
 
+/// Internal event emitted when the pending requests stream updates.
 class DashboardPendingRequestsUpdated extends DashboardEvent {
   const DashboardPendingRequestsUpdated(this.pendingRequests);
   final List<ApartmentRequestEntity> pendingRequests;
@@ -36,6 +41,7 @@ class DashboardPendingRequestsUpdated extends DashboardEvent {
   List<Object?> get props => [pendingRequests];
 }
 
+/// Internal event emitted when the posts stream updates.
 class DashboardPostsUpdated extends DashboardEvent {
   const DashboardPostsUpdated(this.posts);
   final List<PostEntity> posts;
@@ -44,6 +50,7 @@ class DashboardPostsUpdated extends DashboardEvent {
   List<Object?> get props => [posts];
 }
 
+/// Internal event emitted when the announcements stream updates.
 class DashboardAnnouncementsUpdated extends DashboardEvent {
   const DashboardAnnouncementsUpdated(this.announcements);
   final List<AnnouncementEntity> announcements;
@@ -52,8 +59,7 @@ class DashboardAnnouncementsUpdated extends DashboardEvent {
   List<Object?> get props => [announcements];
 }
 
-/// Internal — any one of the four listeners errored (e.g. dropped
-/// connection, permission change). Non-fatal to the other three feeds.
+/// Internal event emitted when any dashboard listener fails.
 class DashboardFailed extends DashboardEvent {
   const DashboardFailed(this.message);
   final String message;

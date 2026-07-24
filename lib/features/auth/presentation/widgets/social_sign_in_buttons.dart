@@ -52,7 +52,7 @@ class _SocialButton extends StatelessWidget {
       child: OutlinedButton.icon(
         onPressed: onPressed,
         icon: leading,
-        label: Text(label),
+        label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
         style: OutlinedButton.styleFrom(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(Dimensions.radius(12))),
         ),

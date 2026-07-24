@@ -60,7 +60,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigated = true;
 
     final state = results.first as AuthState;
-    Navigator.of(context).pushNamedAndRemoveUntil(
+    await Navigator.of(context).pushNamedAndRemoveUntil(
       state.status == AuthStatus.authenticated ? AppRoutes.dashboard : AppRoutes.auth,
       (route) => false,
     );
