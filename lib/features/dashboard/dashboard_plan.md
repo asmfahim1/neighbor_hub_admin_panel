@@ -3,8 +3,9 @@
 **Source:** `docs/admen_web_app_ui_functionality.md` §7.2
 **Arcle module:** `lib/features/dashboard/` (data/domain/presentation, BLoC)
 **Status:** Data/domain/presentation wired to Firebase (poll participation
-rate deferred — see note below). UI is still the arcle placeholder — real
-UI/UX is a separate pass once the design is ready.
+rate deferred - see note below).
+**UI status:** Dashboard/admin-shell UI is implemented for the Dashboard route.
+Shared extraction for all other post-login pages remains a follow-up.
 
 ## Overview
 
@@ -17,17 +18,148 @@ building" CTA into Buildings.
 
 - Dashboard (single screen, both surfaces; layout density differs)
 
+## Resident App Analytics Metrics
+
+Dashboard should include a small "Resident app analytics" section with:
+
+- User app downloads / installs.
+- Realtime active users.
+
+These metrics are not available from the current Firestore schema. Firestore
+can display them only after the Resident App or an analytics pipeline writes a
+readable source, for example `app_metrics/{buildingId}` with fields such as
+`installCount`, `activeUsersNow`, `activeUsersToday`, and `updatedAt`.
+Firebase Analytics can collect installs/active users, but the admin client
+cannot query Firebase Analytics directly from Firestore without an export,
+backend, or scheduled sync. Until that source exists, the dashboard UI should
+show the analytics cards with a clear "Data source pending" state rather than
+fake numbers.
+
+## Admin Shell & Navigation UI Plan
+
+This dashboard pass should introduce the authenticated admin shell used by
+all post-login screens, not just replace the dashboard body. After successful
+signup/sign-in, the admin lands on Dashboard inside this shell.
+
+### Responsive navigation
+
+- **Web / desktop:** persistent left sidebar.
+- **Mobile / app:** bottom navigation with five primary destinations:
+  `Dashboard`, `Requests`, `Announcements`, `Notifications`, `Menu`.
+- **Tablet / narrow desktop:** keep the same information architecture; choose
+  the sidebar only when the web breakpoint is active, otherwise use the mobile
+  bottom navigation pattern.
+
+### Web sidebar items
+
+Use the same route set already defined in `AppRoutes`, grouped for scanning:
+
+- Primary: `Dashboard`, `Requests`, `Apartments`, `Residents`
+- Communication: `Announcements`, `Chat`, `Notifications`
+- Management: `Building`, `Moderation`, `Polls`, `Analytics`
+- Account: `Profile`, `Settings`, `Sign out`
+
+`Requests` maps to the Residents module's pending request queue
+(`Residents` section 7.5.1), while `Residents` maps to the resident directory.
+If both are implemented in the same route at first, the route should accept a
+tab/initial-section argument later rather than creating duplicate business
+logic.
+
+### Mobile bottom navigation
+
+Bottom navigation should stay compact and action-focused:
+
+- `Dashboard` -> `AppRoutes.dashboard`
+- `Requests` -> Residents pending request queue
+- `Announcements` -> `AppRoutes.announcements`
+- `Notifications` -> `AppRoutes.notifications`
+- `Menu` -> opens the mobile admin menu; it is not a separate destination
+
+The selected tab should reflect the active primary screen. When the admin
+opens a secondary screen from Menu, the bottom bar can keep `Menu` selected or
+leave no selected tab, but it must not mislabel the screen as Dashboard.
+
+### Mobile Menu drawer/sheet
+
+Pressing `Menu` opens a navigation drawer or full-height modal sheet. The top
+area shows the signed-in admin identity:
+
+- Person avatar/photo
+- Display name
+- Email
+- Role label (`Admin`)
+
+Below that, show the same secondary options available from the web sidebar:
+
+- `Building`
+- `Apartments`
+- `Residents`
+- `Moderation`
+- `Polls`
+- `Analytics`
+- `Chat`
+- `Profile`
+- `Settings`
+- `Sign out`
+
+The menu should close before navigating, so back behavior remains predictable.
+
+### Settings in shell/menu
+
+Settings can reuse the existing `AppSettingsCubit` and `SettingsBody`
+behavior:
+
+- Theme: light / dark
+- Language: English (`en`) / Bangla (`bn`)
+
+On web this can be reached from the sidebar `Settings` item. On mobile it is
+reached from the Menu list. A later polish pass can decide whether Settings is
+a full screen, drawer section, or modal sheet; the first implementation should
+prefer a normal screen to keep routing simple.
+
+### Session and lifecycle requirements
+
+- The shell must be shown only after `AuthBloc` resolves an authenticated
+  admin session.
+- Feature screens must start their realtime listeners using
+  `CurrentSession.requireBuildingId()` / `CurrentSession.requireUid()` as
+  appropriate. Today the placeholder screens do not dispatch their
+  `*WatchStarted` events, so this dashboard pass must wire
+  `DashboardWatchStarted(buildingId)` at minimum.
+- If a restored route opens directly into a post-login screen before the
+  session is ready, route through the splash/auth gate instead of letting
+  `CurrentSession` throw.
+- Sign out should dispatch the existing auth/profile sign-out path, clear the
+  session, and navigate back to `AppRoutes.auth` or `AppRoutes.splash`.
+
 ## UI Tasks
 
-- [ ] Apartment KPI cards: vacant / pending_approval / occupied / blocked counts
-- [ ] Floor vs. occupancy breakdown — table on web, stacked cards on app (e.g. "Floor 1 — 4 apartments, 3 occupied, 1 vacant")
-- [ ] Resident count card
-- [ ] Pending requests queue widget, tap-through into Residents §7.5.1
-- [ ] Engagement summary: total posts/comments/reactions, top-N active residents, poll participation rate
-- [ ] Recent activity feed (posts, announcements, recently-decided apartment_requests) ordered by `createdAt desc`
-- [ ] Deep-link every card/row into its owning feature (tap a KPI → Apartments, tap pending request → Residents)
-- [ ] Empty state: "Set up your building" CTA → Buildings
-- [ ] Replace the placeholder `dashboard_screen.dart` (compiles against the real `DashboardBloc`/`DashboardState`, no design applied) with real UI once available
+- [x] Build authenticated admin shell on the Dashboard route: responsive web sidebar +
+      mobile bottom navigation.
+- [ ] Extract the admin shell into a reusable wrapper for every post-login
+      feature screen.
+- [x] Mobile bottom navigation: `Dashboard`, `Requests`, `Announcements`,
+      `Notifications`, `Menu`.
+- [x] Mobile `Menu` drawer/sheet with avatar, name, email, role, secondary
+      navigation items, settings entry, and sign-out.
+- [x] Web sidebar with Dashboard, Requests, Building, Apartments, Residents,
+      Moderation, Announcements, Polls, Analytics, Chat, Notifications,
+      Profile, Settings, Sign out.
+- [x] Wire post-login Dashboard to start `DashboardWatchStarted` using
+      `CurrentSession.requireBuildingId()`.
+- [x] Resident app analytics cards: app downloads/installs and realtime active
+      users. Initial UI shows "Data source pending" until a Firestore or
+      Firebase Analytics sync source exists.
+- [x] Apartment KPI cards: vacant / pending_approval / occupied / blocked counts
+- [x] Floor vs. occupancy breakdown - progress rows on web and app
+- [x] Resident count card
+- [x] Pending requests queue widget, tap-through into Residents pending queue
+- [x] Engagement summary: total posts/comments/reactions and top-N active residents
+- [ ] Poll participation rate in engagement summary
+- [x] Recent activity feed (posts and announcements) ordered by `createdAt desc`
+- [x] Deep-link every card/row into its owning feature
+- [x] Empty state: "Set up your building" CTA to Buildings
+- [x] Replace the placeholder `dashboard_screen.dart` with real UI.
 
 ## Firebase Connection Tasks
 
